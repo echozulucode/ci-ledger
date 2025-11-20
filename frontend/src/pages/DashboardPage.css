@@ -1,0 +1,93 @@
+/* Dashboard Page Styles */
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.welcome-card,
+.user-info-card,
+.api-info-card {
+  background: white;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-card h2 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.welcome-card p {
+  color: #666;
+  margin: 0;
+}
+
+.user-info-card h3,
+.api-info-card h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.info-value {
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.info-value.active {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.info-value.inactive {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.api-info-card p {
+  margin: 10px 0;
+  color: #666;
+}
+
+.api-info-card code {
+  background-color: #f4f4f4;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: #e83e8c;
+}
+
+.api-info-card a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.api-info-card a:hover {
+  text-decoration: underline;
+}

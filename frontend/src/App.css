@@ -1,0 +1,78 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #282c34;
+}
+
+.App-header {
+  color: white;
+  max-width: 800px;
+  padding: 2rem;
+}
+
+.App-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #61dafb;
+}
+
+.App-header p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.api-status {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.api-status h2 {
+  color: #61dafb;
+  margin-bottom: 1rem;
+}
+
+.api-info {
+  text-align: left;
+  margin-top: 1rem;
+}
+
+.api-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.api-info li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #444;
+}
+
+.api-info li:last-child {
+  border-bottom: none;
+}
+
+.api-info strong {
+  color: #61dafb;
+}
+
+.api-info a {
+  color: #61dafb;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.api-info a:hover {
+  text-decoration: underline;
+}
+
+.error {
+  color: #ff6b6b;
+  font-weight: bold;
+}

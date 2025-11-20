@@ -1,0 +1,88 @@
+Feature File,Scenario,Requirement ID,Requirement Title,Category,Priority,Test Case ID,Implementation Status,Test Status,Notes
+01-authentication.feature,Admin user login,AUTH-001,System shall authenticate users,Authentication,HIGH,TC-AUTH-001,Implemented,Verified,Standard login with credentials
+01-authentication.feature,Admin user login,AUTH-002,System shall hash passwords,Security,CRITICAL,TC-AUTH-002,Implemented,Verified,Using bcrypt
+01-authentication.feature,Admin user logout,AUTH-003,System shall maintain session state,Authentication,HIGH,TC-AUTH-003,Implemented,Verified,Token-based sessions
+01-authentication.feature,Admin user logout,AUTH-004,System shall allow logout,Authentication,MEDIUM,TC-AUTH-004,Implemented,Verified,Clears session tokens
+01-authentication.feature,Failed login with invalid password,AUTH-005,System shall reject invalid credentials,Security,CRITICAL,TC-AUTH-005,Implemented,Verified,Returns 401 error
+01-authentication.feature,Failed login with invalid username,AUTH-006,System shall validate username format,Validation,HIGH,TC-AUTH-006,Implemented,Verified,Email format validation
+01-authentication.feature,Session expiration,AUTH-007,System shall expire sessions after timeout,Security,HIGH,TC-AUTH-007,Implemented,Verified,30-minute default
+01-authentication.feature,Session expiration,AUTH-008,System shall require re-authentication after timeout,Security,HIGH,TC-AUTH-008,Implemented,Verified,Redirects to login
+02-ldap-authentication.feature,LDAP authentication configuration,LDAP-001,System shall support LDAP configuration,Authentication,HIGH,TC-LDAP-001,Implemented,Pending,Configuration via environment
+02-ldap-authentication.feature,LDAP authentication configuration,LDAP-002,System shall validate LDAP connection,Integration,HIGH,TC-LDAP-002,Implemented,Pending,Connection testing
+02-ldap-authentication.feature,Successful LDAP user login,LDAP-003,System shall authenticate against LDAP,Authentication,HIGH,TC-LDAP-003,Implemented,Pending,Bind operation
+02-ldap-authentication.feature,Successful LDAP user login,LDAP-004,System shall create local user record for LDAP users,User Management,MEDIUM,TC-LDAP-004,Implemented,Pending,Auto-provisioning
+02-ldap-authentication.feature,LDAP group to role mapping,LDAP-005,System shall map LDAP groups to roles,Authorization,HIGH,TC-LDAP-005,Implemented,Pending,Configurable mapping
+02-ldap-authentication.feature,LDAP group to role mapping,LDAP-006,System shall grant permissions based on LDAP groups,Authorization,HIGH,TC-LDAP-006,Implemented,Pending,Dynamic role assignment
+02-ldap-authentication.feature,Failed LDAP login,LDAP-007,System shall handle LDAP authentication failures,Error Handling,HIGH,TC-LDAP-007,Implemented,Pending,Graceful fallback
+02-ldap-authentication.feature,LDAP user attribute sync,LDAP-008,System shall synchronize user attributes,Integration,MEDIUM,TC-LDAP-008,Implemented,Pending,Email and full name sync
+02-ldap-authentication.feature,Hybrid authentication with internal users,LDAP-009,System shall support mixed authentication,Authentication,HIGH,TC-LDAP-009,Implemented,Pending,Internal and LDAP users
+02-ldap-authentication.feature,LDAP connection failure handling,LDAP-010,System shall fallback when LDAP unavailable,Resilience,HIGH,TC-LDAP-010,Implemented,Pending,Internal auth fallback
+02-ldap-authentication.feature,LDAP connection troubleshooting,LDAP-011,System shall provide LDAP connection diagnostics,Troubleshooting,MEDIUM,TC-LDAP-011,Implemented,Pending,Test endpoint and logging
+03-user-management.feature,View list of all users as admin,USER-001,System shall display user list to admins,User Management,HIGH,TC-USER-001,Implemented,Verified,Paginated list
+03-user-management.feature,View list of all users as admin,USER-002,System shall restrict user list to admins,Security,HIGH,TC-USER-002,Implemented,Verified,Role-based access
+03-user-management.feature,Create new user,USER-003,System shall allow admin to create users,User Management,HIGH,TC-USER-003,Implemented,Verified,Form validation
+03-user-management.feature,Create new user,USER-004,System shall validate email format,Validation,HIGH,TC-USER-004,Implemented,Verified,Email regex
+03-user-management.feature,Create new user,USER-005,System shall enforce password requirements,Security,HIGH,TC-USER-005,Implemented,Verified,Min 8 chars
+03-user-management.feature,Create new user,USER-006,System shall prevent duplicate emails,Validation,HIGH,TC-USER-006,Implemented,Verified,Unique constraint
+03-user-management.feature,Update user details,USER-007,System shall allow updating user info,User Management,HIGH,TC-USER-007,Implemented,Verified,PATCH endpoint
+03-user-management.feature,Update user role,USER-008,System shall allow role modification,Authorization,HIGH,TC-USER-008,Implemented,Verified,Admin only
+03-user-management.feature,Disable user account,USER-009,System shall allow disabling users,User Management,HIGH,TC-USER-009,Implemented,Verified,Soft delete
+03-user-management.feature,Disable user account,USER-010,System shall prevent disabled user login,Security,HIGH,TC-USER-010,Implemented,Verified,Login blocked
+03-user-management.feature,Delete user account,USER-011,System shall allow user deletion,User Management,MEDIUM,TC-USER-011,Implemented,Verified,Hard delete option
+03-user-management.feature,Non-admin cannot manage users,USER-012,System shall restrict user management to admins,Security,CRITICAL,TC-USER-012,Implemented,Verified,403 for non-admins
+04-items-management.feature,Create new item,ITEM-001,System shall allow authenticated users to create items,Items Management,HIGH,TC-ITEM-001,Implemented,Verified,POST endpoint
+04-items-management.feature,Create new item,ITEM-002,System shall validate item data,Validation,HIGH,TC-ITEM-002,Implemented,Verified,Title and description required
+04-items-management.feature,Create new item,ITEM-003,System shall associate items with owners,Items Management,HIGH,TC-ITEM-003,Implemented,Verified,User ID foreign key
+04-items-management.feature,View my items,ITEM-004,System shall display user's items,Items Management,HIGH,TC-ITEM-004,Implemented,Verified,Filtered by owner
+04-items-management.feature,View my items,ITEM-005,System shall paginate item lists,Performance,MEDIUM,TC-ITEM-005,Implemented,Verified,Default 50 items
+04-items-management.feature,Update item,ITEM-006,System shall allow owners to update items,Items Management,HIGH,TC-ITEM-006,Implemented,Verified,PUT endpoint
+04-items-management.feature,Update item,ITEM-007,System shall prevent unauthorized updates,Security,CRITICAL,TC-ITEM-007,Implemented,Verified,Owner check
+04-items-management.feature,Delete item,ITEM-008,System shall allow owners to delete items,Items Management,HIGH,TC-ITEM-008,Implemented,Verified,DELETE endpoint
+04-items-management.feature,Delete item,ITEM-009,System shall prevent unauthorized deletions,Security,CRITICAL,TC-ITEM-009,Implemented,Verified,Owner check
+04-items-management.feature,Admin views all items,ITEM-010,System shall allow admins to view all items,Items Management,HIGH,TC-ITEM-010,Implemented,Verified,Admin override
+04-items-management.feature,Search items,ITEM-011,System shall support item search,Search,MEDIUM,TC-ITEM-011,Implemented,Verified,Title and description search
+04-items-management.feature,Search items,ITEM-012,System shall filter search by user,Search,MEDIUM,TC-ITEM-012,Implemented,Verified,Owner filter parameter
+05-personal-access-tokens.feature,Create PAT,PAT-001,System shall allow users to create PATs,API Access,HIGH,TC-PAT-001,Implemented,Verified,Token generation
+05-personal-access-tokens.feature,Create PAT,PAT-002,System shall require PAT name,Validation,MEDIUM,TC-PAT-002,Implemented,Verified,Name field required
+05-personal-access-tokens.feature,Create PAT,PAT-003,System shall allow optional expiration,API Access,MEDIUM,TC-PAT-003,Implemented,Verified,NULL for no expiration
+05-personal-access-tokens.feature,Create PAT,PAT-004,System shall generate secure tokens,Security,CRITICAL,TC-PAT-004,Implemented,Verified,Cryptographically secure
+05-personal-access-tokens.feature,Create PAT,PAT-005,System shall display token once,Security,HIGH,TC-PAT-005,Implemented,Verified,Copy to clipboard
+05-personal-access-tokens.feature,API authentication with PAT,PAT-006,System shall authenticate API requests with PAT,API Access,HIGH,TC-PAT-006,Implemented,Verified,Bearer token
+05-personal-access-tokens.feature,API authentication with PAT,PAT-007,System shall validate token format,Validation,HIGH,TC-PAT-007,Implemented,Verified,Token parsing
+05-personal-access-tokens.feature,API authentication with PAT,PAT-008,System shall check token expiration,Security,HIGH,TC-PAT-008,Implemented,Verified,Expiration validation
+05-personal-access-tokens.feature,List user PATs,PAT-009,System shall display user's tokens,API Access,HIGH,TC-PAT-009,Implemented,Verified,Masked tokens
+05-personal-access-tokens.feature,List user PATs,PAT-010,System shall show last used timestamp,Auditing,MEDIUM,TC-PAT-010,Implemented,Verified,Last used tracking
+05-personal-access-tokens.feature,Revoke PAT,PAT-011,System shall allow token revocation,Security,HIGH,TC-PAT-011,Implemented,Verified,DELETE endpoint
+05-personal-access-tokens.feature,Revoke PAT,PAT-012,System shall reject revoked tokens,Security,CRITICAL,TC-PAT-012,Implemented,Verified,Active check
+05-personal-access-tokens.feature,Expired PAT handling,PAT-013,System shall reject expired tokens,Security,CRITICAL,TC-PAT-013,Implemented,Verified,401 on expired
+05-personal-access-tokens.feature,Admin views all PATs,PAT-014,System shall allow admins to view all tokens,Administration,MEDIUM,TC-PAT-014,Implemented,Verified,Admin access
+05-personal-access-tokens.feature,Admin revokes any PAT,PAT-015,System shall allow admins to revoke any token,Administration,MEDIUM,TC-PAT-015,Implemented,Verified,Admin override
+06-security.feature,HTTPS enforcement,SEC-001,System shall enforce HTTPS connections,Security,CRITICAL,TC-SEC-001,Pending,Pending,Production requirement
+06-security.feature,CORS configuration,SEC-002,System shall configure CORS properly,Security,HIGH,TC-SEC-002,Implemented,Verified,Configured origins
+06-security.feature,Rate limiting,SEC-003,System shall implement rate limiting,Security,HIGH,TC-SEC-003,Pending,Pending,Per-user limits
+06-security.feature,SQL injection prevention,SEC-004,System shall prevent SQL injection,Security,CRITICAL,TC-SEC-004,Implemented,Verified,Parameterized queries
+06-security.feature,XSS prevention,SEC-005,System shall prevent XSS attacks,Security,CRITICAL,TC-SEC-005,Implemented,Verified,Input sanitization
+06-security.feature,CSRF protection,SEC-006,System shall implement CSRF protection,Security,HIGH,TC-SEC-006,Implemented,Verified,Token validation
+06-security.feature,Password hashing,SEC-007,System shall hash passwords securely,Security,CRITICAL,TC-SEC-007,Implemented,Verified,Bcrypt with salt
+06-security.feature,Secure headers,SEC-008,System shall set security headers,Security,HIGH,TC-SEC-008,Implemented,Verified,CSP and other headers
+06-security.feature,Audit logging,SEC-009,System shall log security events,Auditing,HIGH,TC-SEC-009,Implemented,Verified,Authentication and authorization events
+07-ui-navigation.feature,Top navigation bar,UI-001,System shall display top navigation bar,UI/UX,HIGH,TC-UI-001,Implemented,Verified,Persistent across pages
+07-ui-navigation.feature,Top navigation bar,UI-002,System shall show logo in top left,UI/UX,MEDIUM,TC-UI-002,Implemented,Verified,Clickable home link
+07-ui-navigation.feature,Top navigation bar,UI-003,System shall display user menu,UI/UX,HIGH,TC-UI-003,Implemented,Verified,Dropdown menu
+07-ui-navigation.feature,Responsive navigation,UI-004,System shall adapt to mobile devices,UI/UX,MEDIUM,TC-UI-004,Implemented,Verified,Responsive design
+07-ui-navigation.feature,Active tab highlighting,UI-005,System shall highlight active tab,UI/UX,MEDIUM,TC-UI-005,Implemented,Verified,Visual indicator
+07-ui-navigation.feature,Login/logout visibility,UI-006,System shall show login when logged out,UI/UX,HIGH,TC-UI-006,Implemented,Verified,Conditional rendering
+07-ui-navigation.feature,Login/logout visibility,UI-007,System shall show user menu when logged in,UI/UX,HIGH,TC-UI-007,Implemented,Verified,User context
+08-system-administration.feature,View system logs,ADMIN-001,System shall provide admin access to logs,Administration,HIGH,TC-ADMIN-001,Pending,Pending,Log viewer
+08-system-administration.feature,Database backups,ADMIN-002,System shall support database backups,Administration,HIGH,TC-ADMIN-002,Pending,Pending,Backup mechanism
+08-system-administration.feature,System health monitoring,ADMIN-003,System shall provide health check endpoint,Administration,HIGH,TC-ADMIN-003,Implemented,Verified,/health endpoint
+08-system-administration.feature,Configuration management,ADMIN-004,System shall allow runtime configuration,Administration,MEDIUM,TC-ADMIN-004,Implemented,Verified,Environment variables
+09-quality-attributes.feature,API response time,PERF-001,System shall respond within 200ms for API requests,Performance,HIGH,TC-PERF-001,Pending,Pending,Performance testing needed
+09-quality-attributes.feature,Concurrent users,PERF-002,System shall support 100 concurrent users,Performance,HIGH,TC-PERF-002,Pending,Pending,Load testing needed
+09-quality-attributes.feature,Database query optimization,PERF-003,System shall optimize database queries,Performance,HIGH,TC-PERF-003,Implemented,Pending,Indexes and query optimization
+09-quality-attributes.feature,Uptime requirement,RELIABLE-001,System shall maintain 99.9% uptime,Reliability,HIGH,TC-RELIABLE-001,Pending,Pending,Production monitoring
+09-quality-attributes.feature,Error recovery,RELIABLE-002,System shall recover from errors gracefully,Reliability,HIGH,TC-RELIABLE-002,Implemented,Verified,Exception handling
+09-quality-attributes.feature,Data consistency,RELIABLE-003,System shall maintain data consistency,Reliability,CRITICAL,TC-RELIABLE-003,Implemented,Verified,Transaction management
+09-quality-attributes.feature,API documentation,MAINTAIN-001,System shall provide API documentation,Maintainability,HIGH,TC-MAINTAIN-001,Implemented,Verified,OpenAPI/Swagger
+09-quality-attributes.feature,Code documentation,MAINTAIN-002,System shall include code documentation,Maintainability,MEDIUM,TC-MAINTAIN-002,Implemented,Verified,Docstrings and comments
+09-quality-attributes.feature,Logging standards,MAINTAIN-003,System shall follow logging standards,Maintainability,MEDIUM,TC-MAINTAIN-003,Implemented,Verified,Structured logging
