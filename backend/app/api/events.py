@@ -44,6 +44,7 @@ def list_events(
         skip=skip,
         limit=limit,
     )
+    _attach_relations(session, events)
     return events
 
 
@@ -57,6 +58,7 @@ def get_event(
     event = crud_event.get_event(session, event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
+    _attach_relations(session, [event])
     return event
 
 
@@ -100,6 +102,63 @@ def delete_event(
         raise HTTPException(status_code=404, detail="Event not found")
     crud_event.delete_event(session, db_event)
     return None
+
+
+def _attach_relations(session: Session, events: List[Event]) -> None:
+    """Attach agents/tools/tags to event read models."""
+    from app.models.agent import Agent
+    from app.models.tool import Tool
+    from app.models.tag import Tag, EventTag
+    from app.models.tool import EventTool
+    from app.models.agent import EventAgent
+    from sqlmodel import select
+
+    event_ids = [e.id for e in events]
+    if not event_ids:
+        return
+
+    agent_links = session.exec(select(EventAgent).where(EventAgent.event_id.in_(event_ids))).all()
+    tool_links = session.exec(select(EventTool).where(EventTool.event_id.in_(event_ids))).all()
+    tag_links = session.exec(select(EventTag).where(EventTag.event_id.in_(event_ids))).all()
+
+    agents_map = {a.id: a for a in session.exec(select(Agent).where(Agent.id.in_([l.agent_id for l in agent_links]))).all()}
+    tools_map = {t.id: t for t in session.exec(select(Tool).where(Tool.id.in_([l.tool_id for l in tool_links]))).all()}
+    tags_map = {t.id: t for t in session.exec(select(Tag).where(Tag.id.in_([l.tag_id for l in tag_links]))).all()}
+
+    by_id: dict[int, Event] = {e.id: e for e in events}
+    for link in agent_links:
+        evt = by_id.get(link.event_id)
+        agent = agents_map.get(link.agent_id)
+        if evt and agent:
+            if not hasattr(evt, "__dict__"):
+                continue
+            current = evt.__dict__.get("agents") or []
+            evt.__dict__["agents"] = current + [{"id": agent.id, "name": agent.name}]
+
+    for link in tool_links:
+        evt = by_id.get(link.event_id)
+        tool = tools_map.get(link.tool_id)
+        if evt and tool:
+            if not hasattr(evt, "__dict__"):
+                continue
+            current = evt.__dict__.get("tools") or []
+            evt.__dict__["tools"] = current + [
+                {
+                    "id": tool.id,
+                    "name": tool.name,
+                    "version_from": link.version_from,
+                    "version_to": link.version_to,
+                }
+            ]
+
+    for link in tag_links:
+        evt = by_id.get(link.event_id)
+        tag = tags_map.get(link.tag_id)
+        if evt and tag:
+            if not hasattr(evt, "__dict__"):
+                continue
+            current = evt.__dict__.get("tags") or []
+            evt.__dict__["tags"] = current + [{"id": tag.id, "name": tag.name}]
 
 
 def _ensure_related_entities_exist(

@@ -55,3 +55,6 @@ class EventRead(EventBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    agents: Optional[List[Dict[str, Any]]] = None
+    tools: Optional[List[Dict[str, Any]]] = None
+    tags: Optional[List[Dict[str, Any]]] = None
