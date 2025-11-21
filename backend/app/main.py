@@ -1,26 +1,23 @@
-"""
-FastAPI Intranet Demo - Main Application
-"""
+"""CI Ledger - Infrastructure Change Tracker API"""
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.core.database import create_db_and_tables
-from app.api import auth, users, tokens, items, events, agents, tools, toolchains, tags
+from app.core.database import create_db_and_tables, get_session
+from app.api import auth, users, tokens, events, agents, tools, toolchains, tags
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
-    # Startup: Create database tables
+    # Startup: create database tables and seed core data
     create_db_and_tables()
-    
-    # Create initial admin user if it doesn't exist
-    from app.core.database import get_session
+
     from app.crud import user as crud_user
     from app.models.user import UserCreate
-    
+    from app import seeds
+
     session = next(get_session())
     admin = crud_user.get_user_by_email(session, settings.FIRST_SUPERUSER_EMAIL)
     if not admin:
@@ -29,13 +26,18 @@ async def lifespan(app: FastAPI):
             password=settings.FIRST_SUPERUSER_PASSWORD,
             full_name="Admin User",
             is_admin=True,
-            is_active=True
+            is_active=True,
         )
         crud_user.create_user(session, admin_create)
-        print(f"✅ Created admin user: {settings.FIRST_SUPERUSER_EMAIL}")
-    
+        print(f"? Created admin user: {settings.FIRST_SUPERUSER_EMAIL}")
+
+    # Optionally seed sample data for local development
+    if settings.SEED_SAMPLE_DATA and settings.ENVIRONMENT == "development":
+        seeds.seed_sample_data(session)
+        print("ⓘ Seeded sample CI Ledger data")
+
     yield
-    
+
     # Shutdown: cleanup if needed
 
 
@@ -44,34 +46,25 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description="""
-    ## FastAPI Intranet Demo Application
+    ## CI Ledger API
     
-    A production-ready, full-stack intranet web application showcasing enterprise features.
+    Timeline-based change tracker for CI infrastructure with FastAPI + SQLModel.
     
     ### Features
-    
-    * **Authentication**: JWT-based authentication with username/password
-    * **User Management**: Complete user CRUD operations with role-based access control
-    * **Personal Access Tokens**: API token generation and management
-    * **Sample CRUD**: Items/Projects management demonstrating ownership-based access
-    * **Security**: Argon2 password hashing, RBAC, input validation
+    * **Auth**: JWT login plus Personal Access Tokens
+    * **Change events**: typed/severity-scoped events with metadata
+    * **Inventory**: agents, tools, toolchains, tags with linking
+    * **Filtering**: time range, agent/tool, type/severity/source, search
     
     ### Authentication
-    
-    Most endpoints require authentication. Use one of the following methods:
-    
-    1. **JWT Token** (OAuth2 Password Bearer): Login via `/api/auth/login` and use the access token
-    2. **Personal Access Token**: Create a token via `/api/users/me/tokens` and use as Bearer token
+    Use the **Authorize** button, then:
+    1. JWT token from `/api/auth/login`
+    2. Personal Access Token from `/api/users/me/tokens`
     
     ### Quick Start
-    
-    1. Login or register a new account
-    2. Use the **Authorize** button to authenticate
-    3. Explore the API endpoints below
-    
-    ### Support
-    
-    For issues or questions, please refer to the repository documentation.
+    1. Create agents, tools, tags, and toolchains
+    2. Post events with related agents/tools/tags
+    3. Query `/api/events` with filters for timeline views
     """,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -99,10 +92,6 @@ app = FastAPI(
         {
             "name": "tokens",
             "description": "Personal Access Token (PAT) management. Create and manage API tokens for programmatic access.",
-        },
-        {
-            "name": "items",
-            "description": "Sample CRUD entity. Demonstrates ownership-based access control and pagination.",
         },
         {
             "name": "events",
@@ -140,7 +129,6 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(tokens.router, prefix="/api/users", tags=["tokens"])
-app.include_router(items.router)
 app.include_router(events.router)
 app.include_router(agents.router)
 app.include_router(tools.router)
@@ -152,12 +140,12 @@ app.include_router(tags.router)
 async def root():
     """Root endpoint - health check."""
     return {
-        "message": "Welcome to FastAPI Intranet Demo",
+        "message": "Welcome to CI Ledger",
         "app": settings.APP_NAME,
         "version": settings.APP_VERSION,
         "environment": settings.ENVIRONMENT,
         "docs": "/docs",
-        "authentication": "enabled"
+        "authentication": "enabled",
     }
 
 

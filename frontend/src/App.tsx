@@ -8,7 +8,6 @@ import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminUsersPage from './pages/AdminUsersPage'
 import TokensPage from './pages/TokensPage'
-import ItemsPage from './pages/ItemsPage'
 import { useToast } from './hooks/useToast'
 import './App.css'
 
@@ -52,14 +51,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <TokensPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/items"
-            element={
-              <ProtectedRoute>
-                <ItemsPage />
               </ProtectedRoute>
             }
           />

@@ -64,6 +64,9 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_EMAIL: str = "admin@example.com"
     FIRST_SUPERUSER_PASSWORD: str = "changethis"
     
+    # Dev helpers
+    SEED_SAMPLE_DATA: bool = False
+    
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True,

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from sqlalchemy import Column, JSON
+from sqlalchemy import Column, Text
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.models.enums import EventSeverity, EventSource, EventType
@@ -13,10 +13,10 @@ class EventBase(SQLModel):
     event_type: EventType = Field(max_length=50, index=True)
     severity: EventSeverity = Field(default=EventSeverity.INFO, max_length=50, index=True)
     source: EventSource = Field(default=EventSource.MANUAL, max_length=50, index=True)
-    metadata: Optional[Dict[str, Any]] = Field(
+    details: Optional[str] = Field(
         default=None,
-        sa_column=Column(JSON, nullable=True),
-        description="Optional structured payload"
+        sa_column=Column("metadata", Text, nullable=True),
+        description="Optional structured payload stored as JSON string"
     )
 
 
@@ -34,7 +34,7 @@ class Event(EventBase, table=True):
 
 class EventCreate(EventBase):
     agent_ids: Optional[List[int]] = None
-    tool_versions: Optional[List[Dict[str, Optional[str]]]] = None  # [{tool_id, version_from, version_to}]
+    tool_versions: Optional[List[Dict[str, Optional[Any]]]] = None  # [{tool_id, version_from, version_to}]
     tag_ids: Optional[List[int]] = None
 
 
@@ -45,9 +45,9 @@ class EventUpdate(SQLModel):
     event_type: Optional[EventType] = Field(default=None, max_length=50)
     severity: Optional[EventSeverity] = Field(default=None, max_length=50)
     source: Optional[EventSource] = Field(default=None, max_length=50)
-    metadata: Optional[Dict[str, Any]] = None
+    details: Optional[str] = None
     agent_ids: Optional[List[int]] = None
-    tool_versions: Optional[List[Dict[str, Optional[str]]]] = None
+    tool_versions: Optional[List[Dict[str, Optional[Any]]]] = None
     tag_ids: Optional[List[int]] = None
 
 

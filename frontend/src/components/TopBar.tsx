@@ -38,7 +38,7 @@ const TopBar: React.FC = () => {
         {/* Logo and Brand */}
         <Link to={isAuthenticated ? "/dashboard" : "/"} className="topbar-brand">
           <span className="topbar-logo">🚀</span>
-          <span className="topbar-title">FastAPI Demo</span>
+          <span className="topbar-title">CI Ledger</span>
         </Link>
 
         {/* Navigation Links (for authenticated users) */}
@@ -49,12 +49,6 @@ const TopBar: React.FC = () => {
               className={`topbar-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
             >
               Dashboard
-            </Link>
-            <Link 
-              to="/items" 
-              className={`topbar-link ${location.pathname === '/items' ? 'active' : ''}`}
-            >
-              Items
             </Link>
             <Link 
               to="/tokens" 

@@ -91,6 +91,9 @@ def update_event(session: Session, db_event: Event, event_in: EventUpdate) -> Ev
 
 
 def delete_event(session: Session, db_event: Event) -> None:
+    session.exec(delete(EventAgent).where(EventAgent.event_id == db_event.id))
+    session.exec(delete(EventTool).where(EventTool.event_id == db_event.id))
+    session.exec(delete(EventTag).where(EventTag.event_id == db_event.id))
     session.delete(db_event)
     session.commit()
 

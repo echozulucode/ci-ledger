@@ -59,7 +59,7 @@ def seed_sample_data(session: Session) -> None:
         event_type=EventType.TOOL_UPDATE,
         severity=EventSeverity.WARNING,
         source=EventSource.AUTOMATED,
-        metadata={"job": "runtime-upgrade", "version_from": "3.10.8", "version_to": "3.11.2"},
+        details='{"job": "runtime-upgrade", "version_from": "3.10.8", "version_to": "3.11.2"}',
     )
     event2 = Event(
         title="Bitbucket connectivity lost",
@@ -68,7 +68,7 @@ def seed_sample_data(session: Session) -> None:
         event_type=EventType.OUTAGE,
         severity=EventSeverity.CRITICAL,
         source=EventSource.MANUAL,
-        metadata={"duration_minutes": 45, "suspected": True},
+        details='{"duration_minutes": 45, "suspected": true}',
     )
 
     session.add_all([event1, event2])
