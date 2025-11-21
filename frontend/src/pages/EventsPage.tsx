@@ -132,6 +132,16 @@ const [filters, setFilters] = useState({
     setFilters((prev) => ({ ...prev, [key]: value, page: 0 }));
   };
 
+  const getTagNames = (evt: EventItem): string[] => {
+    if (evt.tags && evt.tags.length > 0) return evt.tags.map((t) => t.name);
+    if (evt.tag_ids && evt.tag_ids.length > 0) {
+      return evt.tag_ids
+        .map((id: number) => tags.find((t) => t.id === id)?.name)
+        .filter((name): name is string => Boolean(name));
+    }
+    return [];
+  };
+
   const clearFilters = () => {
     setFilters({
       agentId: "",
@@ -351,23 +361,41 @@ const [filters, setFilters] = useState({
         )}
 
         {!loading && events.length > 0 && viewMode === "list" && (
-          <div className="events-list">
-            {events.map((evt) => (
-              <div key={evt.id} className="event-card" onClick={() => setSelectedEvent(evt)}>
-                <div className="event-card__header">
-                  <div>
-                    <span className={`badge badge-${evt.severity.toLowerCase()}`}>{evt.severity}</span>
-                    <span className="event-type">{evt.event_type}</span>
-                  </div>
-                  <span className="timestamp">{formatDate(evt.timestamp)}</span>
-                </div>
-                <h3>{evt.title}</h3>
-                {evt.description && <p className="description">{evt.description}</p>}
-                <div className="meta">
-                  <span className="pill">Source: {evt.source}</span>
-                </div>
-              </div>
-            ))}
+          <div className="table-card">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Title</th>
+                  <th>Type</th>
+                  <th>Severity</th>
+                  <th>Source</th>
+                  <th>Tags</th>
+                </tr>
+              </thead>
+              <tbody>
+                {events.map((evt) => {
+                  const tagNames = getTagNames(evt);
+                  return (
+                    <tr key={evt.id} onClick={() => setSelectedEvent(evt)} className="clickable-row">
+                      <td className="mono">{formatDate(evt.timestamp)}</td>
+                      <td>{evt.title}</td>
+                      <td><span className="pill subtle">{evt.event_type}</span></td>
+                      <td><span className={`badge badge-${evt.severity.toLowerCase()}`}>{evt.severity}</span></td>
+                      <td>{evt.source}</td>
+                      <td>
+                        <div className="chips">
+                          {tagNames.slice(0, 3).map((name) => (
+                            <span key={name} className="pill subtle">{name}</span>
+                          ))}
+                          {tagNames.length > 3 && <span className="pill subtle">+{tagNames.length - 3}</span>}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
 
@@ -475,6 +503,8 @@ const [filters, setFilters] = useState({
                   <button
                     className="btn-danger"
                     onClick={async () => {
+                      const ok = window.confirm("Delete this event?");
+                      if (!ok) return;
                       try {
                         await api.delete(`/api/events/${selectedEvent.id}`);
                         setSelectedEvent(null);
