@@ -1,13 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import Register from '../pages/Register';
-import axios from 'axios';
+import RegisterPage from '../pages/RegisterPage';
 
-vi.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-
+const mockRegister = vi.fn();
 const mockNavigate = vi.fn();
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -16,43 +14,59 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-describe('Register Component', () => {
+vi.mock('../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    register: mockRegister,
+    login: vi.fn(),
+    logout: vi.fn(),
+    user: null,
+    isAuthenticated: false,
+  }),
+  AuthProvider: ({ children }: any) => children,
+}));
+
+describe('RegisterPage Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRegister.mockReset();
+    mockNavigate.mockReset();
   });
 
   it('renders registration form', () => {
     render(
       <BrowserRouter>
-        <Register />
+        <RegisterPage />
       </BrowserRouter>
     );
 
-    expect(screen.getByPlaceholderText(/full name/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/^password$/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/john doe/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/your@email.com/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/enter password/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/confirm password/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
 
   it('displays error on duplicate email', async () => {
-    mockedAxios.post.mockRejectedValueOnce({
+    mockRegister.mockRejectedValueOnce({
       response: { data: { detail: 'Email already registered' } }
     });
 
     render(
       <BrowserRouter>
-        <Register />
+        <RegisterPage />
       </BrowserRouter>
     );
 
-    const nameInput = screen.getByPlaceholderText(/full name/i);
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/^password$/i);
-    const registerButton = screen.getByRole('button', { name: /register/i });
+    const nameInput = screen.getByPlaceholderText(/john doe/i);
+    const emailInput = screen.getByPlaceholderText(/your@email.com/i);
+    const passwordInput = screen.getByPlaceholderText(/enter password/i);
+    const confirmInput = screen.getByPlaceholderText(/confirm password/i);
+    const registerButton = screen.getByRole('button', { name: /create account/i });
 
     fireEvent.change(nameInput, { target: { value: 'Test User' } });
     fireEvent.change(emailInput, { target: { value: 'existing@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'StrongPass123!' } });
+    fireEvent.change(passwordInput, { target: { value: 'StrongPass123' } });
+    fireEvent.change(confirmInput, { target: { value: 'StrongPass123' } });
     fireEvent.click(registerButton);
 
     await waitFor(() => {
@@ -60,47 +74,58 @@ describe('Register Component', () => {
     });
   });
 
-  it('successfully registers and redirects to login', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
-      data: { id: 1, email: 'newuser@example.com', full_name: 'New User' }
-    });
+  it('successfully registers and redirects to dashboard', async () => {
+    mockRegister.mockResolvedValueOnce(undefined);
 
     render(
       <BrowserRouter>
-        <Register />
+        <RegisterPage />
       </BrowserRouter>
     );
 
-    const nameInput = screen.getByPlaceholderText(/full name/i);
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/^password$/i);
-    const registerButton = screen.getByRole('button', { name: /register/i });
+    const nameInput = screen.getByPlaceholderText(/john doe/i);
+    const emailInput = screen.getByPlaceholderText(/your@email.com/i);
+    const passwordInput = screen.getByPlaceholderText(/enter password/i);
+    const confirmInput = screen.getByPlaceholderText(/confirm password/i);
+    const registerButton = screen.getByRole('button', { name: /create account/i });
 
     fireEvent.change(nameInput, { target: { value: 'New User' } });
     fireEvent.change(emailInput, { target: { value: 'newuser@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'StrongPass123!' } });
+    fireEvent.change(passwordInput, { target: { value: 'StrongPass123' } });
+    fireEvent.change(confirmInput, { target: { value: 'StrongPass123' } });
     fireEvent.click(registerButton);
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/login');
+      expect(mockRegister).toHaveBeenCalledWith('newuser@example.com', 'New User', 'StrongPass123');
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
   });
 
   it('validates password strength', async () => {
     render(
       <BrowserRouter>
-        <Register />
+        <RegisterPage />
       </BrowserRouter>
     );
 
-    const passwordInput = screen.getByPlaceholderText(/^password$/i);
-    fireEvent.change(passwordInput, { target: { value: 'weak' } });
+    const nameInput = screen.getByPlaceholderText(/john doe/i);
+    const emailInput = screen.getByPlaceholderText(/your@email.com/i);
+    const passwordInput = screen.getByPlaceholderText(/enter password/i);
+    const confirmInput = screen.getByPlaceholderText(/confirm password/i);
 
-    // Check if validation message appears (implementation-dependent)
-    const registerButton = screen.getByRole('button', { name: /register/i });
+    fireEvent.change(nameInput, { target: { value: 'Test User' } });
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'weak' } });
+    fireEvent.change(confirmInput, { target: { value: 'weak' } });
+
+    const registerButton = screen.getByRole('button', { name: /create account/i });
     fireEvent.click(registerButton);
 
+    await waitFor(() => {
+      expect(screen.getByText(/password must be at least 8 characters/i)).toBeInTheDocument();
+    });
+
     // Should not make API call with weak password
-    expect(mockedAxios.post).not.toHaveBeenCalled();
+    expect(mockRegister).not.toHaveBeenCalled();
   });
 });

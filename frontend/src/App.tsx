@@ -8,6 +8,7 @@ import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminUsersPage from './pages/AdminUsersPage'
 import TokensPage from './pages/TokensPage'
+import EventsPage from './pages/EventsPage'
 import { useToast } from './hooks/useToast'
 import './App.css'
 
@@ -51,6 +52,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <TokensPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events"
+            element={
+              <ProtectedRoute>
+                <EventsPage />
               </ProtectedRoute>
             }
           />

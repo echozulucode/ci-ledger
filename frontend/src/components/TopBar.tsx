@@ -51,6 +51,12 @@ const TopBar: React.FC = () => {
               Dashboard
             </Link>
             <Link 
+              to="/events" 
+              className={`topbar-link ${location.pathname === '/events' ? 'active' : ''}`}
+            >
+              Events
+            </Link>
+            <Link 
               to="/tokens" 
               className={`topbar-link ${location.pathname === '/tokens' ? 'active' : ''}`}
             >

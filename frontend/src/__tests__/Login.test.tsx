@@ -1,13 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import Login from '../pages/Login';
-import axios from 'axios';
+import LoginPage from '../pages/LoginPage';
+import * as AuthContext from '../contexts/AuthContext';
 
-vi.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-
+const mockLogin = vi.fn();
 const mockNavigate = vi.fn();
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -16,16 +15,28 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-describe('Login Component', () => {
+vi.mock('../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    login: mockLogin,
+    logout: vi.fn(),
+    user: null,
+    isAuthenticated: false,
+  }),
+  AuthProvider: ({ children }: any) => children,
+}));
+
+describe('LoginPage Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    mockLogin.mockReset();
+    mockNavigate.mockReset();
   });
 
   it('renders login form', () => {
     render(
       <BrowserRouter>
-        <Login />
+        <LoginPage />
       </BrowserRouter>
     );
 
@@ -35,19 +46,19 @@ describe('Login Component', () => {
   });
 
   it('displays error message on failed login', async () => {
-    mockedAxios.post.mockRejectedValueOnce({
+    mockLogin.mockRejectedValueOnce({
       response: { data: { detail: 'Invalid credentials' } }
     });
 
     render(
       <BrowserRouter>
-        <Login />
+        <LoginPage />
       </BrowserRouter>
     );
 
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-    const loginButton = screen.getByRole('button', { name: /login/i });
+    const emailInput = screen.getByPlaceholderText(/your@email.com/i);
+    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
+    const loginButton = screen.getByRole('button', { name: /^login$/i });
 
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
@@ -58,28 +69,25 @@ describe('Login Component', () => {
     });
   });
 
-  it('stores token and redirects on successful login', async () => {
-    const mockToken = 'mock-jwt-token';
-    mockedAxios.post.mockResolvedValueOnce({
-      data: { access_token: mockToken }
-    });
+  it('calls login and redirects on successful login', async () => {
+    mockLogin.mockResolvedValueOnce(undefined);
 
     render(
       <BrowserRouter>
-        <Login />
+        <LoginPage />
       </BrowserRouter>
     );
 
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-    const loginButton = screen.getByRole('button', { name: /login/i });
+    const emailInput = screen.getByPlaceholderText(/your@email.com/i);
+    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
+    const loginButton = screen.getByRole('button', { name: /^login$/i });
 
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'correctpassword' } });
     fireEvent.click(loginButton);
 
     await waitFor(() => {
-      expect(localStorage.getItem('access_token')).toBe(mockToken);
+      expect(mockLogin).toHaveBeenCalledWith('test@example.com', 'correctpassword');
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
   });
@@ -87,14 +95,14 @@ describe('Login Component', () => {
   it('validates required fields', async () => {
     render(
       <BrowserRouter>
-        <Login />
+        <LoginPage />
       </BrowserRouter>
     );
 
-    const loginButton = screen.getByRole('button', { name: /login/i });
+    const loginButton = screen.getByRole('button', { name: /^login$/i });
     fireEvent.click(loginButton);
 
     // Form should not submit without valid inputs
-    expect(mockedAxios.post).not.toHaveBeenCalled();
+    expect(mockLogin).not.toHaveBeenCalled();
   });
 });
