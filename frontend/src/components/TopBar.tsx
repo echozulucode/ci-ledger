@@ -63,12 +63,20 @@ const TopBar: React.FC = () => {
               API Tokens
             </Link>
             {user?.is_admin && (
+              <>
+              <Link 
+                to="/inventory" 
+                className={`topbar-link ${location.pathname === '/inventory' ? 'active' : ''}`}
+              >
+                Inventory
+              </Link>
               <Link 
                 to="/admin/users" 
                 className={`topbar-link ${location.pathname === '/admin/users' ? 'active' : ''}`}
               >
                 Users
               </Link>
+              </>
             )}
           </nav>
         )}

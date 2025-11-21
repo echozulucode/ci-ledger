@@ -3,14 +3,15 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import EventsPage from "../pages/EventsPage";
 
-vi.mock("../services/api", () => {
-  const mockGet = vi.fn();
-  return {
-    default: { get: mockGet },
-    authAPI: {},
-    userAPI: {},
-  };
-});
+const mockApi = vi.hoisted(() => ({
+  get: vi.fn(),
+}));
+
+vi.mock("../services/api", () => ({
+  default: mockApi,
+  authAPI: {},
+  userAPI: {},
+}));
 
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({
@@ -24,11 +25,8 @@ vi.mock('../contexts/AuthContext', () => ({
 
 describe("EventsPage", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => [],
-    });
+    mockApi.get.mockReset();
+    mockApi.get.mockResolvedValue({ data: [] });
   });
 
   it("renders heading", async () => {
@@ -39,5 +37,15 @@ describe("EventsPage", () => {
     );
 
     expect(screen.getByText(/Change Events/i)).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockApi.get).toHaveBeenCalledWith(
+        "/api/events",
+        expect.objectContaining({ params: expect.any(Object) })
+      );
+      expect(mockApi.get).toHaveBeenCalledWith("/api/agents");
+      expect(mockApi.get).toHaveBeenCalledWith("/api/tools");
+      expect(mockApi.get).toHaveBeenCalledWith("/api/tags");
+    });
   });
 });
