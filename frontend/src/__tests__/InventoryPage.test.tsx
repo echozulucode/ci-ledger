@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, waitFor } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { TestRouter } from "../test-utils/router";
 import InventoryPage from "../pages/InventoryPage";
 
 const mockApi = vi.hoisted(() => ({
@@ -33,9 +33,9 @@ describe("InventoryPage", () => {
 
   it("loads resources", async () => {
     render(
-      <BrowserRouter>
+      <TestRouter>
         <InventoryPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     await waitFor(() => {

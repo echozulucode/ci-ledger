@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { TestRouter } from '../test-utils/router';
 import TokensPage from '../pages/TokensPage';
 
 const mockNavigate = vi.fn();
@@ -50,9 +50,9 @@ describe('TokensPage Component', () => {
     });
 
     render(
-      <BrowserRouter>
+      <TestRouter>
         <TokensPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     await waitFor(() => {
@@ -67,9 +67,9 @@ describe('TokensPage Component', () => {
     });
 
     render(
-      <BrowserRouter>
+      <TestRouter>
         <TokensPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     await waitFor(() => {
@@ -109,9 +109,9 @@ describe('TokensPage Component', () => {
       });
 
     render(
-      <BrowserRouter>
+      <TestRouter>
         <TokensPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     await waitFor(() => {
@@ -137,9 +137,9 @@ describe('TokensPage Component', () => {
     });
 
     render(
-      <BrowserRouter>
+      <TestRouter>
         <TokensPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     await waitFor(() => {

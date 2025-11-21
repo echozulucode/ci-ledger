@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { TestRouter } from '../test-utils/router';
 import ProfilePage from '../pages/ProfilePage';
 import * as api from '../services/api';
 
@@ -50,9 +50,9 @@ describe('ProfilePage Component', () => {
 
   it('displays user profile', () => {
     render(
-      <BrowserRouter>
+      <TestRouter>
         <ProfilePage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     expect(screen.getByText('Test User')).toBeInTheDocument();
@@ -63,9 +63,9 @@ describe('ProfilePage Component', () => {
     const updateProfileMock = vi.spyOn(api.userAPI, 'updateProfile').mockResolvedValueOnce(mockUser);
 
     render(
-      <BrowserRouter>
+      <TestRouter>
         <ProfilePage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     const editButton = screen.getByRole('button', { name: /edit profile/i });
@@ -88,9 +88,9 @@ describe('ProfilePage Component', () => {
     const changePasswordMock = vi.spyOn(api.userAPI, 'changePassword').mockResolvedValueOnce(undefined);
 
     render(
-      <BrowserRouter>
+      <TestRouter>
         <ProfilePage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     const changePasswordButton = screen.getByRole('button', { name: /change password/i });
@@ -117,9 +117,9 @@ describe('ProfilePage Component', () => {
 
   it('validates password match', async () => {
     render(
-      <BrowserRouter>
+      <TestRouter>
         <ProfilePage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     const changePasswordButton = screen.getByRole('button', { name: /change password/i });

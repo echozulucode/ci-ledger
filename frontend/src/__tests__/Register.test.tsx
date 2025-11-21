@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { TestRouter } from '../test-utils/router';
 import RegisterPage from '../pages/RegisterPage';
 
 const mockRegister = vi.fn();
@@ -34,9 +34,9 @@ describe('RegisterPage Component', () => {
 
   it('renders registration form', () => {
     render(
-      <BrowserRouter>
+      <TestRouter>
         <RegisterPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     expect(screen.getByPlaceholderText(/john doe/i)).toBeInTheDocument();
@@ -52,9 +52,9 @@ describe('RegisterPage Component', () => {
     });
 
     render(
-      <BrowserRouter>
+      <TestRouter>
         <RegisterPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     const nameInput = screen.getByPlaceholderText(/john doe/i);
@@ -78,9 +78,9 @@ describe('RegisterPage Component', () => {
     mockRegister.mockResolvedValueOnce(undefined);
 
     render(
-      <BrowserRouter>
+      <TestRouter>
         <RegisterPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     const nameInput = screen.getByPlaceholderText(/john doe/i);
@@ -103,9 +103,9 @@ describe('RegisterPage Component', () => {
 
   it('validates password strength', async () => {
     render(
-      <BrowserRouter>
+      <TestRouter>
         <RegisterPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     const nameInput = screen.getByPlaceholderText(/john doe/i);

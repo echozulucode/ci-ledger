@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { TestRouter } from '../test-utils/router';
 import LoginPage from '../pages/LoginPage';
 
 const mockLogin = vi.fn();
@@ -34,9 +34,9 @@ describe('LoginPage Component', () => {
 
   it('renders login form', () => {
     render(
-      <BrowserRouter>
+      <TestRouter>
         <LoginPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
@@ -50,9 +50,9 @@ describe('LoginPage Component', () => {
     });
 
     render(
-      <BrowserRouter>
+      <TestRouter>
         <LoginPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     const emailInput = screen.getByPlaceholderText(/your@email.com/i);
@@ -72,9 +72,9 @@ describe('LoginPage Component', () => {
     mockLogin.mockResolvedValueOnce(undefined);
 
     render(
-      <BrowserRouter>
+      <TestRouter>
         <LoginPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     const emailInput = screen.getByPlaceholderText(/your@email.com/i);
@@ -93,9 +93,9 @@ describe('LoginPage Component', () => {
 
   it('validates required fields', async () => {
     render(
-      <BrowserRouter>
+      <TestRouter>
         <LoginPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     const loginButton = screen.getByRole('button', { name: /^login$/i });

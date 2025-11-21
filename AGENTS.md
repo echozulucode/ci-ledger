@@ -26,6 +26,7 @@
 ## Commit & Pull Request Guidelines
 - Use clear, present-tense commits (optionally Conventional Commits: `feat: add event timeline filters`). Group related changes; avoid mixed-format fixes.
 - PRs: include summary, linked issue, screenshots for UI, and test plan (`pytest`, `npm test`, `docker-compose up` smoke). Keep diff focused; update docs when APIs change.
+- Do not auto-commit from tools/agents; commits should be created and pushed manually after review.
 
 ## Security & Configuration Tips
 - Sensitive values live in `.env` files (backend/front). Never commit secrets. Default DB is SQLite; keep WAL files on the mounted volume.

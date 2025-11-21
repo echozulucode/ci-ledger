@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { TestRouter } from "../test-utils/router";
 import EventsPage from "../pages/EventsPage";
 
 const mockApi = vi.hoisted(() => ({
@@ -31,9 +31,9 @@ describe("EventsPage", () => {
 
   it("renders heading", async () => {
     render(
-      <BrowserRouter>
+      <TestRouter>
         <EventsPage />
-      </BrowserRouter>
+      </TestRouter>
     );
 
     expect(screen.getByText(/Change Events/i)).toBeInTheDocument();
