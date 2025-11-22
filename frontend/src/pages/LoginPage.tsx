@@ -86,7 +86,7 @@ const LoginPage: React.FC = () => {
 
         <div className="auth-links">
           <p>
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link to="/register">Register here</Link>
           </p>
           <Link to="/forgot-password" className="forgot-password">

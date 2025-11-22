@@ -1,5 +1,6 @@
 /* Import global CSS variables */
 @import './styles/variables.css';
+@import './styles/linear-ui.css';
 
 /* Global Reset */
 * {

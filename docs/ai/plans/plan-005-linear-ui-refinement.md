@@ -33,6 +33,18 @@
 10) Responsive + accessibility polish  
    - Mobile-friendly filter bar and primary actions; table-to-card collapse; focus rings, contrast compliance, and reduced-motion paths.
 
+## Actionable Tasks (Priority Order)
+1. Token pass: tighten spacing/typography defaults and status pill colors to match Apple/Linear tone.  
+2. Shared primitives: Chips/Pills, FilterBar, SectionHeader with counts, DisplayPopover skeleton, ListRow hover states, skeleton/empty/toast refresh.  
+3. Events screen pass: add filter chips with clear-all, saved views preset (e.g., “Recent”, “By agent”), display popover for density/columns, inline row actions, and section headers for grouped severity/type.  
+4. Create/edit UX: replace modal with wide sheet, pill selectors for status/type/severity, sticky action bar with keyboard hints (Enter/Esc), undo toast for delete.  
+5. Detail view: add split-pane/slide-over that keeps list context, with inline chips for status/labels/owners.  
+6. Keyboard + command palette: Cmd/Ctrl+K for jump-to/create, “F” to focus filters, Enter/Esc shortcuts on sheets/menus.  
+7. PAT/Inventory pass: reuse list row + filter bar + display popover + sheet patterns on tokens/admin inventories.  
+8. Responsive polish: mobile filter bar collapse to drawer; cards for narrow widths; persistent primary CTA.  
+9. Accessibility: focus rings, contrast check, reduced-motion variants for key transitions; aria labels on menus/popovers.  
+10. QA: Playwright smoke for filter chips, saved views, sheet create, undo delete, command palette; unit tests for filter state helpers.
+
 ## Scope & Application
 - Apply to Events/Items lists, PAT management, and Project/Initiative-style views; reuse components across screens.
 - Update shared components: ListRow, Pill/Chip, FilterBar, DisplayPopover, Sheet, Toast, Skeleton, EmptyState.

@@ -39,6 +39,16 @@
   line-height: 1.4;
 }
 
+.toast-action {
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .toast-close {
   background: none;
   border: none;

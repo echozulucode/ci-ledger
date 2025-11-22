@@ -12,9 +12,11 @@ interface ToastProps {
   type: ToastType;
   onClose: () => void;
   duration?: number;
+  actionLabel?: string;
+  onAction?: () => void;
 }
 
-const Toast: React.FC<ToastProps> = ({ message, type, onClose, duration = 3000 }) => {
+const Toast: React.FC<ToastProps> = ({ message, type, onClose, duration = 3000, actionLabel, onAction }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -40,6 +42,11 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose, duration = 3000 }
     <div className={`toast toast-${type}`} role="alert" aria-live="polite">
       <span className="toast-icon">{getIcon()}</span>
       <span className="toast-message">{message}</span>
+      {actionLabel && onAction ? (
+        <button className="toast-action" onClick={onAction}>
+          {actionLabel}
+        </button>
+      ) : null}
       <button 
         className="toast-close" 
         onClick={onClose}

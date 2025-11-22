@@ -4,6 +4,12 @@ import api from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import "./EventsPage.css";
 import React from "react";
+import SectionHeader from "../components/SectionHeader";
+import FilterBar, { FilterItem } from "../components/FilterBar";
+import DisplayPopover from "../components/DisplayPopover";
+import classNames from "../utils/classNames";
+import Chip from "../components/Chip";
+import ToastContainer from "../components/ToastContainer";
 
 interface EventItem {
   id: number;
@@ -35,6 +41,19 @@ interface Tag {
   name: string;
 }
 
+interface EventCreatePayload {
+  title: string;
+  description: string | null;
+  event_type: string;
+  severity: string;
+  source: string;
+  timestamp: string;
+  details: string | null;
+  agent_ids: number[];
+  tool_versions: { tool_id: number; version_from: string | null; version_to: string | null }[];
+  tag_ids: number[];
+}
+
 export default function EventsPage() {
   const { user } = useAuth();
   const isAdmin = user?.is_admin;
@@ -48,7 +67,7 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState({
     agentId: "",
     toolId: "",
     tagId: "",
@@ -60,6 +79,13 @@ const [filters, setFilters] = useState({
     page: 0,
     limit: 20,
   });
+  const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(["event_type", "severity", "source", "timestamp", "tags"]);
+  const [toasts, setToasts] = useState<
+    { id: number; message: string; type: "success" | "error" | "info"; actionLabel?: string; onAction?: () => void }[]
+  >([]);
+  const [undoPayload, setUndoPayload] = useState<EventCreatePayload | null>(null);
+  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const loadEvents = async () => {
     try {
@@ -132,6 +158,30 @@ const [filters, setFilters] = useState({
     setFilters((prev) => ({ ...prev, [key]: value, page: 0 }));
   };
 
+  const addToast = (toast: { message: string; type: "success" | "error" | "info"; actionLabel?: string; onAction?: () => void }) => {
+    setToasts((prev) => [...prev, { id: Date.now(), ...toast }]);
+  };
+
+  const removeToast = (id: number) => setToasts((prev) => prev.filter((t) => t.id !== id));
+
+  const buildPayloadFromEvent = (evt: EventItem): EventCreatePayload => ({
+    title: evt.title,
+    description: evt.description ?? null,
+    event_type: evt.event_type,
+    severity: evt.severity,
+    source: evt.source,
+    timestamp: evt.timestamp,
+    details: evt.details ?? null,
+    agent_ids: evt.agents?.map((a) => a.id) ?? [],
+    tool_versions:
+      evt.tools?.map((t) => ({
+        tool_id: t.id,
+        version_from: t.version_from ?? null,
+        version_to: t.version_to ?? null,
+      })) ?? [],
+    tag_ids: evt.tag_ids ?? evt.tags?.map((t) => t.id) ?? [],
+  });
+
   const getTagNames = (evt: EventItem): string[] => {
     if (evt.tags && evt.tags.length > 0) return evt.tags.map((t) => t.name);
     if (evt.tag_ids && evt.tag_ids.length > 0) {
@@ -187,8 +237,8 @@ const [filters, setFilters] = useState({
   };
 
   const [viewMode, setViewMode] = useState<"list" | "timeline">("list");
-  const activeFilters = useMemo(() => {
-    const entries: { key: keyof typeof filters | "search"; label: string }[] = [];
+  const activeFilters: FilterItem[] = useMemo(() => {
+    const entries: FilterItem[] = [];
     if (search) entries.push({ key: "search", label: `Search: ${search}` });
     if (filters.agentId) {
       const agentName = agents.find((a) => String(a.id) === filters.agentId)?.name || "Agent";
@@ -209,6 +259,61 @@ const [filters, setFilters] = useState({
     if (filters.end) entries.push({ key: "end", label: `To: ${filters.end}` });
     return entries;
   }, [search, filters, agents, tools, tags]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const savedViews = [
+    { label: "Recent", description: "Reset filters", onSelect: () => clearFilters() },
+    { label: "Critical", description: "Show critical severity", onSelect: () => handleFilterChange("severity", "critical") },
+    { label: "Manual source", description: "Events created manually", onSelect: () => handleFilterChange("source", "manual") },
+  ];
+
+  const columnDefs = [
+    {
+      key: "event_type",
+      label: "Type",
+      render: (evt: EventItem) => <span className="pill subtle">{evt.event_type}</span>,
+    },
+    {
+      key: "severity",
+      label: "Severity",
+      render: (evt: EventItem) => <span className={`pill ${evt.severity === "critical" ? "badge-critical" : evt.severity === "warning" ? "badge-warning" : "badge-info"}`}>{evt.severity}</span>,
+    },
+    {
+      key: "source",
+      label: "Source",
+      render: (evt: EventItem) => <span className="pill subtle">{evt.source}</span>,
+    },
+    {
+      key: "timestamp",
+      label: "Timestamp",
+      render: (evt: EventItem) => new Date(evt.timestamp).toLocaleString(),
+    },
+    {
+      key: "tags",
+      label: "Tags",
+      render: (evt: EventItem) => (
+        <div className="chips">
+          {getTagNames(evt).map((tag) => (
+            <Chip key={tag} label={tag} tone="ghost" />
+          ))}
+        </div>
+      ),
+    },
+  ];
+
+  const toggleColumn = (key: string) => {
+    setVisibleColumns((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -231,116 +336,151 @@ const [filters, setFilters] = useState({
       setShowCreate(false);
       setCreateForm((prev) => ({ ...prev, title: "", description: "", details: "" }));
       loadEvents();
+      addToast({ message: "Event created", type: "success" });
     } catch (err) {
       console.error("Failed to create event", err);
-      alert("Failed to create event");
+      addToast({ message: "Failed to create event", type: "error" });
     } finally {
       setCreateSubmitting(false);
     }
   };
 
   const formatDate = (value: string) => new Date(value).toLocaleString();
+  const handleDeleteEvent = async (evt: EventItem) => {
+    const ok = window.confirm("Delete this event?");
+    if (!ok) return;
+    const payload = buildPayloadFromEvent(evt);
+    try {
+      await api.delete(`/api/events/${evt.id}`);
+      setSelectedEvent(null);
+      setUndoPayload(payload);
+      loadEvents();
+      const toastId = Date.now();
+      setToasts((prev) => [
+        ...prev,
+        { id: toastId, message: "Event deleted", type: "info", actionLabel: "Undo", onAction: () => handleUndoDelete(toastId) },
+      ]);
+    } catch (err) {
+      console.error("Failed to delete event", err);
+      addToast({ message: "Failed to delete event", type: "error" });
+    }
+  };
+  const handleUndoDelete = async (toastId?: number) => {
+    if (toastId) removeToast(toastId);
+    if (!undoPayload) return;
+    try {
+      await api.post("/api/events", undoPayload);
+      setUndoPayload(null);
+      loadEvents();
+      addToast({ message: "Event restored", type: "success" });
+    } catch (err) {
+      console.error("Failed to undo delete", err);
+      addToast({ message: "Failed to restore event", type: "error" });
+    }
+  };
 
   return (
     <Layout>
       <div className="events-page">
-        <div className="page-header">
-          <div>
-            <h1>Change Events</h1>
-            <p className="muted">Recent CI infrastructure changes with agent/tool context.</p>
-          </div>
-          <div className="actions">
-            <input
-              type="search"
-              placeholder="Search title/description"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="search-input"
-            />
-            <button className="btn-primary" onClick={loadEvents} disabled={loading}>
-              Refresh
-            </button>
-            {isAdmin && (
-              <button className="btn-secondary" onClick={() => setShowCreate(true)}>
-                New Event
+        <SectionHeader
+          title="Change Events"
+          count={events.length}
+          meta="Recent CI infrastructure changes with agent/tool context."
+          actions={
+            <div className="actions">
+              <input
+                type="search"
+                placeholder="Search title/description"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="search-input"
+                aria-label="Search events"
+                ref={searchInputRef}
+              />
+              <DisplayPopover
+                density={density}
+                onDensityChange={setDensity}
+                columns={columnDefs.map((col) => ({ key: col.key, label: col.label, visible: visibleColumns.includes(col.key) }))}
+                onToggleColumn={toggleColumn}
+              />
+              <div className="view-toggle">
+                <button
+                  className={`btn-secondary ${viewMode === "list" ? "active" : ""}`}
+                  onClick={() => setViewMode("list")}
+                >
+                  List
+                </button>
+                <button
+                  className={`btn-secondary ${viewMode === "timeline" ? "active" : ""}`}
+                  onClick={() => setViewMode("timeline")}
+                >
+                  Timeline
+                </button>
+              </div>
+              <button className="btn-primary" onClick={loadEvents} disabled={loading}>
+                Refresh
               </button>
-            )}
-          </div>
-        </div>
+              {isAdmin && (
+                <button className="btn-secondary" onClick={() => setShowCreate(true)}>
+                  New Event
+                </button>
+              )}
+            </div>
+          }
+        />
 
-        <div className="view-toggle">
-          <button
-            className={`btn-secondary ${viewMode === "list" ? "active" : ""}`}
-            onClick={() => setViewMode("list")}
-          >
-            List
-          </button>
-          <button
-            className={`btn-secondary ${viewMode === "timeline" ? "active" : ""}`}
-            onClick={() => setViewMode("timeline")}
-          >
-            Timeline
-          </button>
-        </div>
-
-        <div className="filters">
-          <select
-            value={filters.agentId}
-            onChange={(e) => handleFilterChange("agentId", e.target.value)}
-          >
+        <FilterBar activeFilters={activeFilters} onRemoveFilter={(key) => removeFilter(key as any)} onClearAll={clearFilters} savedViews={savedViews}>
+          <select value={filters.agentId} onChange={(e) => handleFilterChange("agentId", e.target.value)}>
             <option value="">All agents</option>
             {agents.map((a) => (
-              <option key={a.id} value={a.id}>{a.name}</option>
+              <option key={a.id} value={a.id}>
+                {a.name}
+              </option>
             ))}
           </select>
 
-          <select
-            value={filters.toolId}
-            onChange={(e) => handleFilterChange("toolId", e.target.value)}
-          >
+          <select value={filters.toolId} onChange={(e) => handleFilterChange("toolId", e.target.value)}>
             <option value="">All tools</option>
             {tools.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
             ))}
           </select>
 
-          <select
-            value={filters.tagId}
-            onChange={(e) => handleFilterChange("tagId", e.target.value)}
-          >
+          <select value={filters.tagId} onChange={(e) => handleFilterChange("tagId", e.target.value)}>
             <option value="">All tags</option>
             {tags.map((tag) => (
-              <option key={tag.id} value={tag.id}>{tag.name}</option>
+              <option key={tag.id} value={tag.id}>
+                {tag.name}
+              </option>
             ))}
           </select>
 
-          <select
-            value={filters.eventType}
-            onChange={(e) => handleFilterChange("eventType", e.target.value)}
-          >
+          <select value={filters.eventType} onChange={(e) => handleFilterChange("eventType", e.target.value)}>
             <option value="">All types</option>
             {["tool_install", "tool_update", "tool_removal", "outage", "patch", "rollout", "config_change"].map((t) => (
-              <option key={t} value={t}>{t}</option>
+              <option key={t} value={t}>
+                {t}
+              </option>
             ))}
           </select>
 
-          <select
-            value={filters.severity}
-            onChange={(e) => handleFilterChange("severity", e.target.value)}
-          >
+          <select value={filters.severity} onChange={(e) => handleFilterChange("severity", e.target.value)}>
             <option value="">All severities</option>
             {["info", "warning", "critical"].map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
           </select>
 
-          <select
-            value={filters.source}
-            onChange={(e) => handleFilterChange("source", e.target.value)}
-          >
+          <select value={filters.source} onChange={(e) => handleFilterChange("source", e.target.value)}>
             <option value="">All sources</option>
             {["manual", "automated", "webhook"].map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
           </select>
 
@@ -363,33 +503,18 @@ const [filters, setFilters] = useState({
             </label>
           </div>
 
-          <button className="btn-secondary" onClick={loadEvents} disabled={loading}>
-            Apply
-          </button>
-          <button className="btn-secondary" onClick={clearFilters} disabled={loading}>
-            Clear
-          </button>
-        </div>
-        {activeFilters.length > 0 && (
-          <div className="filter-chips">
-            <div className="filter-chips-list">
-              {activeFilters.map((chip) => (
-                <span key={chip.key} className="filter-chip">
-                  {chip.label}
-                  <button onClick={() => removeFilter(chip.key)} aria-label={`Remove ${chip.label}`}>
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
-            <button className="btn-secondary" onClick={clearFilters}>
-              Clear all
-            </button>
-          </div>
-        )}
+        </FilterBar>
 
         {error && <div className="error-message">{error}</div>}
-        {loading && <div className="loading">Loading events...</div>}
+        {loading && (
+          <div className="table-card">
+            <div style={{ padding: 12, display: "grid", gap: 10 }}>
+              {[...Array(5)].map((_, idx) => (
+                <div key={idx} className="skeleton-row" />
+              ))}
+            </div>
+          </div>
+        )}
 
         {!loading && events.length === 0 && !error && (
           <div className="empty-state">
@@ -401,15 +526,16 @@ const [filters, setFilters] = useState({
 
         {!loading && events.length > 0 && viewMode === "list" && (
           <div className="table-card">
-            <table className="data-table">
+            <table className={classNames("data-table", density === "compact" && "density-compact")}>
               <thead>
                 <tr>
-                  <th>Time</th>
-                  <th>Title</th>
-                  <th>Type</th>
-                  <th>Severity</th>
-                  <th>Source</th>
-                  <th>Tags</th>
+                  <th>Event</th>
+                  {columnDefs
+                    .filter((col) => visibleColumns.includes(col.key))
+                    .map((col) => (
+                      <th key={col.key}>{col.label}</th>
+                    ))}
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -417,18 +543,27 @@ const [filters, setFilters] = useState({
                   const tagNames = getTagNames(evt);
                   return (
                     <tr key={evt.id} onClick={() => setSelectedEvent(evt)} className="clickable-row">
-                      <td className="mono">{formatDate(evt.timestamp)}</td>
-                      <td>{evt.title}</td>
-                      <td><span className="pill subtle">{evt.event_type}</span></td>
-                      <td><span className={`badge badge-${evt.severity.toLowerCase()}`}>{evt.severity}</span></td>
-                      <td>{evt.source}</td>
                       <td>
-                        <div className="chips">
-                          {tagNames.slice(0, 3).map((name) => (
-                            <span key={name} className="pill subtle">{name}</span>
+                        <div className="row-title">{evt.title}</div>
+                        <div className="row-meta">
+                          <span className="mono">{formatDate(evt.timestamp)}</span>
+                          <Chip label={evt.event_type} tone="ghost" />
+                          <Chip label={evt.source} tone="ghost" />
+                          {tagNames.slice(0, 2).map((name) => (
+                            <Chip key={name} label={name} tone="ghost" />
                           ))}
-                          {tagNames.length > 3 && <span className="pill subtle">+{tagNames.length - 3}</span>}
+                          {tagNames.length > 2 && <Chip label={`+${tagNames.length - 2}`} tone="ghost" />}
                         </div>
+                      </td>
+                      {columnDefs
+                        .filter((col) => visibleColumns.includes(col.key))
+                        .map((col) => (
+                          <td key={col.key}>{col.render(evt)}</td>
+                        ))}
+                      <td className="row-actions-cell">
+                        <button className="btn-ghost" onClick={(e) => { e.stopPropagation(); setSelectedEvent(evt); }}>
+                          Open
+                        </button>
                       </td>
                     </tr>
                   );
@@ -534,29 +669,21 @@ const [filters, setFilters] = useState({
               {selectedEvent.details && (
                 <pre className="details-block">{selectedEvent.details}</pre>
               )}
-              <div className="form-actions" style={{ marginTop: 8 }}>
-                <button className="btn-secondary" onClick={() => setSelectedEvent(null)}>
-                  Close
-                </button>
-                {isAdmin && (
-                  <button
-                    className="btn-danger"
-                    onClick={async () => {
-                      const ok = window.confirm("Delete this event?");
-                      if (!ok) return;
-                      try {
-                        await api.delete(`/api/events/${selectedEvent.id}`);
-                        setSelectedEvent(null);
-                        loadEvents();
-                      } catch (err) {
-                        console.error("Failed to delete event", err);
-                        alert("Failed to delete event");
-                      }
-                    }}
-                  >
-                    Delete
+              <div className="sheet-actions">
+                <div className="muted small-text">Esc closes • Delete supports undo</div>
+                <div className="actions">
+                  <button className="btn-secondary" onClick={() => setSelectedEvent(null)}>
+                    Close
                   </button>
-                )}
+                  {isAdmin && (
+                    <button
+                      className="btn-danger"
+                      onClick={() => selectedEvent && handleDeleteEvent(selectedEvent)}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -703,19 +830,25 @@ const [filters, setFilters] = useState({
                     ))}
                   </select>
                 </label>
-                <div className="form-actions">
-                  <button type="button" className="btn-secondary" onClick={() => setShowCreate(false)}>
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-primary" disabled={createSubmitting}>
-                    {createSubmitting ? "Saving..." : "Create"}
-                  </button>
+                <div className="sheet-actions">
+                  <div className="muted small-text">Enter to save • Esc to close</div>
+                  <div className="actions">
+                    <button type="button" className="btn-secondary" onClick={() => setShowCreate(false)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn-primary" disabled={createSubmitting}>
+                      {createSubmitting ? "Saving..." : "Create"}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
           </div>
         )}
+
+        <ToastContainer toasts={toasts} onClose={removeToast} />
       </div>
     </Layout>
   );
 }
+

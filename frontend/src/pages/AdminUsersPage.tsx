@@ -39,27 +39,19 @@ const AdminUsersPage: React.FC = () => {
   };
 
   const handleCreateUser = async (userData: UserFormData) => {
-    try {
-      await api.post('/api/auth/register', userData);
-      setSuccess('User created successfully!');
-      fetchUsers();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err: any) {
-      throw err;
-    }
+    await api.post('/api/auth/register', userData);
+    setSuccess('User created successfully!');
+    fetchUsers();
+    setTimeout(() => setSuccess(''), 3000);
   };
 
   const handleEditUser = async (userData: UserFormData) => {
     if (!selectedUser) return;
 
-    try {
-      await api.put(`/api/users/${selectedUser.id}`, userData);
-      setSuccess('User updated successfully!');
-      fetchUsers();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err: any) {
-      throw err;
-    }
+    await api.put(`/api/users/${selectedUser.id}`, userData);
+    setSuccess('User updated successfully!');
+    fetchUsers();
+    setTimeout(() => setSuccess(''), 3000);
   };
 
   const openCreateModal = () => {
@@ -114,7 +106,7 @@ const AdminUsersPage: React.FC = () => {
       <Layout>
         <div className="access-denied">
           <h1>Access Denied</h1>
-          <p>You don't have permission to access this page.</p>
+          <p>You don&apos;t have permission to access this page.</p>
         </div>
       </Layout>
     );

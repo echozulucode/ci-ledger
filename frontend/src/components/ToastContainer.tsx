@@ -9,6 +9,8 @@ interface ToastState {
   message: string;
   type: ToastType;
   id: number;
+  actionLabel?: string;
+  onAction?: () => void;
 }
 
 interface ToastContainerProps {
@@ -29,6 +31,8 @@ const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onClose }) => {
           <Toast
             message={toast.message}
             type={toast.type}
+            actionLabel={toast.actionLabel}
+            onAction={toast.onAction}
             onClose={() => onClose(toast.id)}
           />
         </div>

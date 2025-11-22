@@ -67,19 +67,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (email: string, fullName: string, password: string) => {
-    try {
-      // Register user
-      await authAPI.register({
-        email,
-        full_name: fullName,
-        password,
-      });
+    await authAPI.register({
+      email,
+      full_name: fullName,
+      password,
+    });
 
-      // Auto-login after registration
-      await login(email, password);
-    } catch (error) {
-      throw error;
-    }
+    await login(email, password);
   };
 
   const logout = async () => {

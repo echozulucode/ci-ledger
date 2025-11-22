@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import './TokensPage.css';
+import SectionHeader from '../components/SectionHeader';
+import FilterBar, { FilterItem } from '../components/FilterBar';
+import DisplayPopover from '../components/DisplayPopover';
+import Chip from '../components/Chip';
+import classNames from '../utils/classNames';
 
 interface Token {
   id: number;
@@ -32,6 +37,9 @@ function TokensPage() {
   const [tokenName, setTokenName] = useState('');
   const [selectedScopes, setSelectedScopes] = useState(['read']);
   const [expiresInDays, setExpiresInDays] = useState<number | ''>('');
+  const [filters, setFilters] = useState<{ search: string }>({ search: '' });
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(['status', 'last_used_at', 'expires_at', 'created_at']);
+  const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
 
   useEffect(() => {
     fetchTokens();
@@ -163,6 +171,8 @@ function TokensPage() {
     }
   };
 
+  const activeFilters: FilterItem[] = filters.search ? [{ key: 'search', label: `Search: ${filters.search}` }] : [];
+
   if (loading) {
     return (
       <Layout>
@@ -176,21 +186,53 @@ function TokensPage() {
   return (
     <Layout>
       <div className="tokens-page">
-      <div className="tokens-header">
-        <h1>Personal Access Tokens</h1>
-        <button className="btn-create" onClick={() => setShowCreateModal(true)}>
-          <span className="icon">+</span> Create New Token
-        </button>
-      </div>
+        <SectionHeader
+          title="Personal Access Tokens"
+          meta="Scope-based API credentials. Copy tokens immediately after creation."
+          actions={
+            <div className="actions">
+              <DisplayPopover
+                density={density}
+                onDensityChange={setDensity}
+                columns={[
+                  { key: 'status', label: 'Status', visible: visibleColumns.includes('status') },
+                  { key: 'last_used_at', label: 'Last Used', visible: visibleColumns.includes('last_used_at') },
+                  { key: 'expires_at', label: 'Expires', visible: visibleColumns.includes('expires_at') },
+                  { key: 'created_at', label: 'Created', visible: visibleColumns.includes('created_at') },
+                ]}
+                onToggleColumn={(key) =>
+                  setVisibleColumns((prev) => (prev.includes(key) ? prev.filter((c) => c !== key) : [...prev, key]))
+                }
+              />
+              <button className="btn-create" onClick={() => setShowCreateModal(true)}>
+                <span className="icon">+</span> Create New Token
+              </button>
+            </div>
+          }
+        />
 
-      <div className="tokens-info">
-        <p className="info-text">
-          Personal access tokens function like passwords for API authentication. 
-          Keep them secure and never share them.
-        </p>
-      </div>
+        <FilterBar
+          activeFilters={activeFilters}
+          onRemoveFilter={(key) => key === 'search' && setFilters({ search: '' })}
+          onClearAll={() => setFilters({ search: '' })}
+        >
+          <input
+            type="search"
+            placeholder="Search tokens"
+            value={filters.search}
+            onChange={(e) => setFilters({ search: e.target.value })}
+            className="search-input"
+          />
+        </FilterBar>
 
-      {error && <div className="error-message">{error}</div>}
+        <div className="tokens-info">
+          <p className="info-text">
+            Personal access tokens function like passwords for API authentication.
+            Keep them secure and never share them.
+          </p>
+        </div>
+
+        {error && <div className="error-message">{error}</div>}
 
       {/* New Token Display Modal */}
       {newTokenData && (
@@ -203,7 +245,7 @@ function TokensPage() {
             
             <div className="token-display-box">
               <div className="warning-box">
-                <strong>⚠️ Important:</strong> Copy this token now. You won't be able to see it again!
+                <strong>⚠️ Important:</strong> Copy this token now. You won&apos;t be able to see it again!
               </div>
               
               <div className="token-value-container">
@@ -234,7 +276,7 @@ function TokensPage() {
             
             <div className="modal-footer">
               <button className="btn-primary" onClick={() => setNewTokenData(null)}>
-                I've saved the token
+                I&apos;ve saved the token
               </button>
             </div>
           </div>
@@ -342,62 +384,71 @@ function TokensPage() {
       <div className="tokens-list">
         {tokens.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">🔑</div>
+            <div className="empty-icon">🔒</div>
             <h3>No tokens yet</h3>
             <p>Create a personal access token to use with the API</p>
           </div>
         ) : (
           <div className="tokens-table-container">
-            <table className="tokens-table">
+            <table className={classNames("tokens-table", density === "compact" && "density-compact")}>
               <thead>
                 <tr>
                   <th>Name</th>
                   <th>Scopes</th>
-                  <th>Status</th>
-                  <th>Last Used</th>
-                  <th>Expires</th>
-                  <th>Created</th>
+                  {visibleColumns.includes('status') && <th>Status</th>}
+                  {visibleColumns.includes('last_used_at') && <th>Last Used</th>}
+                  {visibleColumns.includes('expires_at') && <th>Expires</th>}
+                  {visibleColumns.includes('created_at') && <th>Created</th>}
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {tokens.map(token => (
-                  <tr key={token.id} className={!token.is_active || isExpired(token.expires_at) ? 'inactive' : ''}>
-                    <td className="token-name">
-                      <strong>{token.name}</strong>
-                    </td>
-                    <td>
-                      <div className="scopes-badges">
-                        {token.scopes.split(',').map(scope => (
-                          <span key={scope} className={`scope-badge scope-${scope.trim()}`}>
-                            {scope.trim()}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td>
-                      {!token.is_active ? (
-                        <span className="status-badge status-inactive">Inactive</span>
-                      ) : isExpired(token.expires_at) ? (
-                        <span className="status-badge status-expired">Expired</span>
-                      ) : (
-                        <span className="status-badge status-active">Active</span>
+                {tokens
+                  .filter((t) => t.name.toLowerCase().includes(filters.search.toLowerCase()))
+                  .map(token => (
+                    <tr key={token.id} className={!token.is_active || isExpired(token.expires_at) ? 'inactive' : ''}>
+                      <td className="token-name">
+                        <div className="row-title">{token.name}</div>
+                        <div className="row-meta">
+                          {token.scopes.split(',').slice(0, 3).map(scope => (
+                            <Chip key={scope} label={scope.trim()} tone="ghost" />
+                          ))}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="scopes-badges">
+                          {token.scopes.split(',').map(scope => (
+                            <span key={scope} className={`scope-badge scope-${scope.trim()}`}>
+                              {scope.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      {visibleColumns.includes('status') && (
+                        <td>
+                          {!token.is_active ? (
+                            <span className="status-badge status-inactive">Inactive</span>
+                          ) : isExpired(token.expires_at) ? (
+                            <span className="status-badge status-expired">Expired</span>
+                          ) : (
+                            <span className="status-badge status-active">Active</span>
+                          )}
+                        </td>
                       )}
-                    </td>
-                    <td className="date-cell">{formatDate(token.last_used_at)}</td>
-                    <td className="date-cell">{formatDate(token.expires_at)}</td>
-                    <td className="date-cell">{formatDate(token.created_at)}</td>
-                    <td>
-                      <button
-                        className="btn-revoke"
-                        onClick={() => handleRevokeToken(token.id, token.name)}
-                        title="Revoke token"
-                      >
-                        Revoke
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      {visibleColumns.includes('last_used_at') && <td className="date-cell">{formatDate(token.last_used_at)}</td>}
+                      {visibleColumns.includes('expires_at') && <td className="date-cell">{formatDate(token.expires_at)}</td>}
+                      {visibleColumns.includes('created_at') && <td className="date-cell">{formatDate(token.created_at)}</td>}
+                      <td>
+                        <button
+                          className="btn-revoke"
+                          onClick={() => handleRevokeToken(token.id, token.name)}
+                          title="Revoke token"
+                        >
+                          Revoke
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -409,3 +460,6 @@ function TokensPage() {
 }
 
 export default TokensPage;
+
+
+

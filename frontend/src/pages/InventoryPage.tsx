@@ -3,6 +3,11 @@ import Layout from '../components/Layout';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import './InventoryPage.css';
+import SectionHeader from '../components/SectionHeader';
+import FilterBar, { FilterItem } from '../components/FilterBar';
+import DisplayPopover from '../components/DisplayPopover';
+import Chip from '../components/Chip';
+import classNames from '../utils/classNames';
 
 type Resource = 'agents' | 'tools' | 'tags';
 
@@ -32,6 +37,9 @@ export default function InventoryPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<any>(emptyForms[resource]);
+  const [filters, setFilters] = useState<{ search: string }>({ search: '' });
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(['type', 'category', 'os_type']);
+  const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
 
   useEffect(() => {
     setForm(emptyForms[resource]);
@@ -55,6 +63,10 @@ export default function InventoryPage() {
 
   const handleChange = (key: string, value: string) => {
     setForm((prev: any) => ({ ...prev, [key]: value }));
+  };
+
+  const handleFilterChange = (key: keyof typeof filters, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -100,23 +112,55 @@ export default function InventoryPage() {
   return (
     <Layout>
       <div className="inventory-page">
-        <div className="page-header">
-          <div>
-            <h1>Inventory</h1>
-            <p className="muted">Manage agents, tools, and tags.</p>
-          </div>
-          <div className="view-toggle">
-            {(['agents','tools','tags'] as Resource[]).map((res) => (
-              <button
-                key={res}
-                className={`btn-secondary ${resource === res ? 'active' : ''}`}
-                onClick={() => setResource(res)}
-              >
-                {res.charAt(0).toUpperCase() + res.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
+        <SectionHeader
+          title="Inventory"
+          meta="Manage agents, tools, and tags."
+          actions={
+            <div className="actions">
+              <div className="view-toggle">
+                {(['agents','tools','tags'] as Resource[]).map((res) => (
+                  <button
+                    key={res}
+                    className={`btn-secondary ${resource === res ? 'active' : ''}`}
+                    onClick={() => setResource(res)}
+                  >
+                    {res.charAt(0).toUpperCase() + res.slice(1)}
+                  </button>
+                ))}
+              </div>
+              <DisplayPopover
+                density={density}
+                onDensityChange={setDensity}
+                columns={[
+                  { key: 'type', label: 'Type', visible: visibleColumns.includes('type') },
+                  { key: 'category', label: 'Category', visible: visibleColumns.includes('category') },
+                  { key: 'os_type', label: 'OS', visible: visibleColumns.includes('os_type') },
+                ]}
+                onToggleColumn={(key) =>
+                  setVisibleColumns((prev) => (prev.includes(key) ? prev.filter((c) => c !== key) : [...prev, key]))
+                }
+              />
+            </div>
+          }
+        />
+
+        <FilterBar
+          activeFilters={
+            filters.search
+              ? ([{ key: 'search', label: `Search: ${filters.search}` }] as FilterItem[])
+              : []
+          }
+          onRemoveFilter={(key) => key === 'search' && handleFilterChange('search', '')}
+          onClearAll={() => handleFilterChange('search', '')}
+        >
+          <input
+            type="search"
+            placeholder={`Search ${resource}`}
+            value={filters.search}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
+            className="search-input"
+          />
+        </FilterBar>
 
         {error && <div className="error-message">{error}</div>}
 
@@ -168,37 +212,49 @@ export default function InventoryPage() {
           <div className="inventory-table">
             <div className="table-header">
               <h3>{resource.charAt(0).toUpperCase() + resource.slice(1)}</h3>
-              <button className="btn-secondary" onClick={loadItems} disabled={loading}>
-                Refresh
-              </button>
+              <div className="actions">
+                <button className="btn-secondary" onClick={loadItems} disabled={loading}>
+                  Refresh
+                </button>
+              </div>
             </div>
             {loading && <div className="loading">Loading...</div>}
             {!loading && items.length === 0 && <div className="empty-state">No entries yet.</div>}
             {!loading && items.length > 0 && (
-              <table>
+              <table className={classNames("data-table", density === "compact" && "density-compact")}>
                 <thead>
                   <tr>
                     <th>Name</th>
-                    {resource === 'agents' && <th>OS</th>}
-                    {resource === 'tools' && <th>Type</th>}
-                    {resource === 'tools' && <th>Category</th>}
+                    {resource === 'agents' && visibleColumns.includes('os_type') && <th>OS</th>}
+                    {resource === 'tools' && visibleColumns.includes('type') && <th>Type</th>}
+                    {resource === 'tools' && visibleColumns.includes('category') && <th>Category</th>}
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item: any) => (
-                    <tr key={item.id}>
-                      <td>{item.name}</td>
-                      {resource === 'agents' && <td>{item.os_type || '-'}</td>}
-                      {resource === 'tools' && <td>{item.type || '-'}</td>}
-                      {resource === 'tools' && <td>{item.category || '-'}</td>}
-                      <td>
-                        <button className="btn-secondary" onClick={() => handleDelete(item.id)} disabled={loading}>
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {items
+                    .filter((item: any) => item.name.toLowerCase().includes((filters.search || '').toLowerCase()))
+                    .map((item: any) => (
+                      <tr key={item.id}>
+                        <td>
+                          <div className="row-title">{item.name}</div>
+                          <div className="row-meta">
+                            {resource === 'agents' && (item as Agent).os_type ? <Chip label={(item as Agent).os_type!} tone="ghost" /> : null}
+                            {resource === 'tools' && visibleColumns.includes('type') && (item as Tool).type ? <Chip label={(item as Tool).type!} tone="ghost" /> : null}
+                            {resource === 'tools' && visibleColumns.includes('category') && (item as Tool).category ? <Chip label={(item as Tool).category!} tone="ghost" /> : null}
+                          </div>
+                        </td>
+                        {resource === 'agents' && visibleColumns.includes('os_type') && <td>{(item as Agent).os_type || '-'}</td>}
+                        {resource === 'tools' && visibleColumns.includes('type') && <td>{(item as Tool).type || '-'}</td>}
+                        {resource === 'tools' && visibleColumns.includes('category') && <td>{(item as Tool).category || '-'}</td>}
+                        {resource === 'tags' && <td></td>}
+                        <td style={{ textAlign: 'right' }}>
+                          <button className="btn-secondary" onClick={() => handleDelete(item.id)} disabled={loading}>
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             )}
