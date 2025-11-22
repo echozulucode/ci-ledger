@@ -17,6 +17,10 @@ def get_agent(session: Session, agent_id: int) -> Optional[Agent]:
     return session.get(Agent, agent_id)
 
 
+def get_agent_by_name(session: Session, name: str) -> Optional[Agent]:
+    return session.exec(select(Agent).where(Agent.name == name)).first()
+
+
 def list_agents(session: Session, *, status: Optional[str] = None, skip: int = 0, limit: int = 100) -> List[Agent]:
     statement = select(Agent).offset(skip).limit(limit).order_by(Agent.name)
     if status:

@@ -12,6 +12,7 @@ import EventsPage from './pages/EventsPage'
 import InventoryPage from './pages/InventoryPage'
 import { useToast } from './hooks/useToast'
 import './App.css'
+import AdminRoute from './components/AdminRoute'
 
 function App() {
   const { toasts, hideToast } = useToast();
@@ -44,7 +45,9 @@ function App() {
             path="/admin/users"
             element={
               <ProtectedRoute>
-                <AdminUsersPage />
+                <AdminRoute>
+                  <AdminUsersPage />
+                </AdminRoute>
               </ProtectedRoute>
             }
           />
@@ -68,7 +71,9 @@ function App() {
             path="/inventory"
             element={
               <ProtectedRoute>
-                <InventoryPage />
+                <AdminRoute>
+                  <InventoryPage />
+                </AdminRoute>
               </ProtectedRoute>
             }
           />

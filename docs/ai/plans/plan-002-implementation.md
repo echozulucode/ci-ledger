@@ -38,11 +38,13 @@ Status: Event/agent/tool/toolchain CRUD and filters implemented; event responses
 
 Status: New Events and Inventory screens built with filters, table/timeline toggle, slide-over details, admin actions; tokens/profile/login/register flows unchanged. Playwright smoke added (login page). Export/CSV and advanced timeline remain backlog. No end-to-end auth flow yet (needs seeded user or test login helper).
 
-## Phase 4 - Automation & Ingestion
+## Phase 4 - Automation & Ingestion 🚧 (partial)
 - Webhooks: FastAPI endpoints for Jenkins/generic receivers; parse payloads into internal event schema, validate signatures/hmac if configured.
 - Pollers: background tasks or separate worker container for Jenkins agent config polling, Docker image tracking, and package version checks; schedule via APScheduler/Cron.
 - Normalization: shared transformer module to map external payloads to `events` with tool/agent linkage and metadata; dedupe logic to avoid noisy duplicates.
 - Reliability: queue/retry strategy (start with in-process background tasks, allow pluggable message queue later); ingestion metrics/logging.
+
+Status: Jenkins webhook implemented with optional HMAC verification; auto upserts agents/tools/tags and creates events with source=webhook. Poller scaffold added (disabled by default) with configurable interval. Queue/metrics remain open.
 
 Status: Not started. No webhooks/pollers; ingestion remains manual via API/ui.
 

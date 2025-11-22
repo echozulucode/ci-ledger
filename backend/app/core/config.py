@@ -66,7 +66,13 @@ class Settings(BaseSettings):
     
     # Dev helpers
     SEED_SAMPLE_DATA: bool = False
-    
+
+    # Webhooks / ingestion
+    WEBHOOK_HMAC_SECRET: Optional[str] = None  # if set, expect X-Hub-Signature-256 = sha256=...
+    WEBHOOK_ALLOW_UNAUTHENTICATED: bool = True  # allow public webhook ingress when HMAC is valid
+    JENKINS_POLL_ENABLED: bool = False
+    JENKINS_POLL_INTERVAL: int = 600  # seconds
+
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True,

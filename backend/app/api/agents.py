@@ -15,7 +15,7 @@ router = APIRouter(prefix="/api/agents", tags=["agents"])
 def list_agents(
     *,
     session: Session = Depends(get_session),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_admin_user),
     status: Optional[str] = Query(default=None),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=200),
@@ -28,7 +28,7 @@ def list_agents(
 def get_agent(
     *,
     session: Session = Depends(get_session),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_admin_user),
     agent_id: int,
 ):
     agent = crud_agent.get_agent(session, agent_id)

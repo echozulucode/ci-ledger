@@ -17,6 +17,10 @@ def get_tool(session: Session, tool_id: int) -> Optional[Tool]:
     return session.get(Tool, tool_id)
 
 
+def get_tool_by_name(session: Session, name: str) -> Optional[Tool]:
+    return session.exec(select(Tool).where(Tool.name == name)).first()
+
+
 def list_tools(
     session: Session,
     *,

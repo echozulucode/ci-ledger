@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Layout from "../components/Layout";
 import api from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
@@ -158,6 +158,14 @@ const [filters, setFilters] = useState({
     setSearch("");
   };
 
+  const removeFilter = (key: keyof typeof filters | "search") => {
+    if (key === "search") {
+      setSearch("");
+      return;
+    }
+    handleFilterChange(key, "");
+  };
+
   const [createForm, setCreateForm] = useState({
     title: "",
     description: "",
@@ -172,12 +180,35 @@ const [filters, setFilters] = useState({
     tagIds: [] as string[],
     details: "",
   });
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleCreateChange = (key: keyof typeof createForm, value: any) => {
     setCreateForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const [viewMode, setViewMode] = useState<"list" | "timeline">("list");
+  const activeFilters = useMemo(() => {
+    const entries: { key: keyof typeof filters | "search"; label: string }[] = [];
+    if (search) entries.push({ key: "search", label: `Search: ${search}` });
+    if (filters.agentId) {
+      const agentName = agents.find((a) => String(a.id) === filters.agentId)?.name || "Agent";
+      entries.push({ key: "agentId", label: `Agent: ${agentName}` });
+    }
+    if (filters.toolId) {
+      const toolName = tools.find((t) => String(t.id) === filters.toolId)?.name || "Tool";
+      entries.push({ key: "toolId", label: `Tool: ${toolName}` });
+    }
+    if (filters.tagId) {
+      const tagName = tags.find((t) => String(t.id) === filters.tagId)?.name || "Tag";
+      entries.push({ key: "tagId", label: `Tag: ${tagName}` });
+    }
+    if (filters.eventType) entries.push({ key: "eventType", label: `Type: ${filters.eventType}` });
+    if (filters.severity) entries.push({ key: "severity", label: `Severity: ${filters.severity}` });
+    if (filters.source) entries.push({ key: "source", label: `Source: ${filters.source}` });
+    if (filters.start) entries.push({ key: "start", label: `From: ${filters.start}` });
+    if (filters.end) entries.push({ key: "end", label: `To: ${filters.end}` });
+    return entries;
+  }, [search, filters, agents, tools, tags]);
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -253,15 +284,6 @@ const [filters, setFilters] = useState({
         </div>
 
         <div className="filters">
-          <select
-            value={filters.agentId}
-            onChange={(e) => handleFilterChange("agentId", e.target.value)}
-          >
-            <option value="">All agents</option>
-            {agents.map((a) => (
-              <option key={a.id} value={a.id}>{a.name}</option>
-            ))}
-          </select>
           <select
             value={filters.agentId}
             onChange={(e) => handleFilterChange("agentId", e.target.value)}
@@ -348,6 +370,23 @@ const [filters, setFilters] = useState({
             Clear
           </button>
         </div>
+        {activeFilters.length > 0 && (
+          <div className="filter-chips">
+            <div className="filter-chips-list">
+              {activeFilters.map((chip) => (
+                <span key={chip.key} className="filter-chip">
+                  {chip.label}
+                  <button onClick={() => removeFilter(chip.key)} aria-label={`Remove ${chip.label}`}>
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <button className="btn-secondary" onClick={clearFilters}>
+              Clear all
+            </button>
+          </div>
+        )}
 
         {error && <div className="error-message">{error}</div>}
         {loading && <div className="loading">Loading events...</div>}
@@ -612,23 +651,46 @@ const [filters, setFilters] = useState({
                       ))}
                     </select>
                   </label>
-                  <label>
-                    Version from
-                    <input
-                      value={createForm.versionFrom}
-                      onChange={(e) => handleCreateChange("versionFrom", e.target.value)}
-                      placeholder="e.g. 1.2.3"
-                    />
-                  </label>
-                  <label>
-                    Version to
-                    <input
-                      value={createForm.versionTo}
-                      onChange={(e) => handleCreateChange("versionTo", e.target.value)}
-                      placeholder="e.g. 1.2.4"
-                    />
-                  </label>
                 </div>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ justifySelf: "start" }}
+                  onClick={() => setShowAdvanced((prev) => !prev)}
+                >
+                  {showAdvanced ? "Hide advanced" : "Show advanced"}
+                </button>
+                {showAdvanced && (
+                  <>
+                    <div className="form-row">
+                      <label>
+                        Version from
+                        <input
+                          value={createForm.versionFrom}
+                          onChange={(e) => handleCreateChange("versionFrom", e.target.value)}
+                          placeholder="e.g. 1.2.3"
+                        />
+                      </label>
+                      <label>
+                        Version to
+                        <input
+                          value={createForm.versionTo}
+                          onChange={(e) => handleCreateChange("versionTo", e.target.value)}
+                          placeholder="e.g. 1.2.4"
+                        />
+                      </label>
+                    </div>
+                    <label>
+                      Metadata (JSON text)
+                      <textarea
+                        value={createForm.details}
+                        onChange={(e) => handleCreateChange("details", e.target.value)}
+                        rows={4}
+                        placeholder='{"key": "value"}'
+                      />
+                    </label>
+                  </>
+                )}
                 <label>
                   Tags
                   <select
@@ -640,15 +702,6 @@ const [filters, setFilters] = useState({
                       <option key={tag.id} value={tag.id}>{tag.name}</option>
                     ))}
                   </select>
-                </label>
-                <label>
-                  Metadata (JSON text)
-                  <textarea
-                    value={createForm.details}
-                    onChange={(e) => handleCreateChange("details", e.target.value)}
-                    rows={4}
-                    placeholder='{"key": "value"}'
-                  />
                 </label>
                 <div className="form-actions">
                   <button type="button" className="btn-secondary" onClick={() => setShowCreate(false)}>

@@ -1,11 +1,13 @@
 """CI Ledger - Infrastructure Change Tracker API"""
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import create_db_and_tables, get_session
-from app.api import auth, users, tokens, events, agents, tools, toolchains, tags, items
+from app.api import auth, users, tokens, events, agents, tools, toolchains, tags, items, webhooks
+from app.ingestion import poller
 
 
 @asynccontextmanager
@@ -36,9 +38,16 @@ async def lifespan(app: FastAPI):
         seeds.seed_sample_data(session)
         print("ⓘ Seeded sample CI Ledger data")
 
+    # Start background pollers (disabled by default)
+    stop_event = asyncio.Event()
+    app.state.poller_stop_event = stop_event
+    app.state.poller_task = poller.start_pollers(stop_event)
+
     yield
 
     # Shutdown: cleanup if needed
+    if hasattr(app.state, "poller_task"):
+        await poller.stop_pollers(app.state.poller_task, stop_event)
 
 
 # Create FastAPI app
@@ -113,6 +122,10 @@ app = FastAPI(
             "name": "tags",
             "description": "Labels for categorizing events (e.g., outage, rollout).",
         },
+        {
+            "name": "webhooks",
+            "description": "Inbound webhook ingestion (e.g., Jenkins build notifications).",
+        },
     ],
 )
 
@@ -135,6 +148,7 @@ app.include_router(agents.router)
 app.include_router(tools.router)
 app.include_router(toolchains.router)
 app.include_router(tags.router)
+app.include_router(webhooks.router)
 
 
 @app.get("/")

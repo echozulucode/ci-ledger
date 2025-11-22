@@ -21,7 +21,7 @@ class ToolchainToolsUpdate(BaseModel):
 def list_toolchains(
     *,
     session: Session = Depends(get_session),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_admin_user),
     skip: int = 0,
     limit: int = 100,
 ):
@@ -32,7 +32,7 @@ def list_toolchains(
 def get_toolchain(
     *,
     session: Session = Depends(get_session),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_admin_user),
     toolchain_id: int,
 ):
     tc = crud_toolchain.get_toolchain(session, toolchain_id)

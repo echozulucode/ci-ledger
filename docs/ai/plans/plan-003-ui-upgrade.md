@@ -26,3 +26,10 @@
 - Playwright smoke flows: login, events list/table render, open detail panel, create/delete event (admin), navigate inventory create/delete.
 - Vitest updates for new components (filters params, create form validation, table rendering).
 - Run `npm run build` + lint; keep backend pytests green.
+
+## Latest Review Notes (Apple-style alignment)
+- Palette/tokens: refine type ramp + 8pt spacing, ensure focus states; keep single accent.
+- Events filters: remove duplication, lighten layout, add active filter chips and clear-all.
+- Event create: use progressive disclosure for advanced fields (versions/metadata).
+- Navigation: add subtle icons/breadcrumbs; fix role labels on dashboard.
+- Feedback: add lighter transitions, undo toast for deletes, focus outlines; respect prefers-reduced-motion.

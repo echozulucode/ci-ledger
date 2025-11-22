@@ -15,7 +15,7 @@ router = APIRouter(prefix="/api/tools", tags=["tools"])
 def list_tools(
     *,
     session: Session = Depends(get_session),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_admin_user),
     category: Optional[str] = Query(default=None),
     tool_type: Optional[str] = Query(default=None),
     skip: int = Query(default=0, ge=0),
@@ -29,7 +29,7 @@ def list_tools(
 def get_tool(
     *,
     session: Session = Depends(get_session),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_admin_user),
     tool_id: int,
 ):
     tool = crud_tool.get_tool(session, tool_id)
