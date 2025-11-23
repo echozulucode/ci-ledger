@@ -1,6 +1,7 @@
 /* Import global CSS variables */
 @import './styles/variables.css';
 @import './styles/linear-ui.css';
+@import './components/CommandPalette.css';
 
 /* Global Reset */
 * {

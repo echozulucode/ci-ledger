@@ -37,6 +37,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser(currentUser);
           localStorage.setItem('user', JSON.stringify(currentUser));
         } catch (error) {
+          console.error('AuthContext failed:', error);
           // Token invalid, clear storage
           localStorage.removeItem('access_token');
           localStorage.removeItem('user');

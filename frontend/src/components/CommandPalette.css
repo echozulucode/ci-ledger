@@ -1,0 +1,94 @@
+.cmdp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 80px 16px 16px;
+}
+
+.cmdp {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  width: min(720px, 100%);
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cmdp-input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--color-gray-200);
+  padding: 14px 16px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.cmdp-list {
+  overflow-y: auto;
+  padding: 8px 0;
+  display: grid;
+  gap: 8px;
+}
+
+.cmdp-group {
+  display: grid;
+  gap: 6px;
+  padding: 0 8px 8px;
+}
+
+.cmdp-group-title {
+  font-size: 12px;
+  color: var(--color-gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 8px;
+}
+
+.cmdp-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cmdp-item:hover,
+.cmdp-item:focus-visible {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-200);
+}
+
+.cmdp-item-main {
+  display: grid;
+  gap: 4px;
+}
+
+.cmdp-label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+}
+
+.cmdp-desc {
+  color: var(--color-gray-600);
+  font-size: 0.9rem;
+}
+
+.cmdp-shortcut {
+  font-family: var(--font-family-mono);
+  color: var(--color-gray-600);
+  background: var(--color-gray-100);
+  border-radius: var(--radius-md);
+  padding: 4px 6px;
+  font-size: 12px;
+}

@@ -61,6 +61,7 @@ function TokensPage() {
       const data = await response.json();
       setTokens(data);
     } catch (err) {
+      console.error('TokensPage failed:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
@@ -131,6 +132,7 @@ function TokensPage() {
     try {
       await navigator.clipboard.writeText(text);
     } catch (err) {
+      console.error('TokensPage failed:', err);
       // Fallback for browsers that don't support clipboard API
       const textArea = document.createElement('textarea');
       textArea.value = text;

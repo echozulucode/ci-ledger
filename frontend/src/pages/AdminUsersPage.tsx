@@ -78,6 +78,7 @@ const AdminUsersPage: React.FC = () => {
       });
       fetchUsers();
     } catch (err) {
+      console.error('AdminUserPage failed:', err);
       setError('Failed to update user status');
     }
   };
@@ -91,6 +92,7 @@ const AdminUsersPage: React.FC = () => {
       await api.delete(`/api/users/${userId}`);
       fetchUsers();
     } catch (err) {
+      console.error('AdminUserPage failed:', err);
       setError('Failed to delete user');
     }
   };
